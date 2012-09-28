@@ -1,0 +1,60 @@
+
+CHANGES IN VERSION 0.99.3
+------------------------
+
+NEW FEATURES
+
+    o Renamed all C files. Registering now takes place in a separate file.
+    
+    o plotTV can now alternatively take a character vector of IDs matching 'transcript_id' in the gtf instead of a GRanges object. This is useful to plot RNA-Seq data matching without regions. 
+
+
+BUG FIXES
+   
+    o Added PACKAGE argument to .call
+    
+	o readthrough_pairs argument to parseReads declared experimental.
+	
+	o Removed the matching RNA-Seq data set and added pasillaBamSubset as an example for RNA-Seq visualisation.
+	
+
+CHANGES IN VERSION 0.99.2
+------------------------
+
+NEW FEATURES
+
+    o Added getter methods for all slots of DensityContainer and inherited classes for individual access. Added setter methods for spliced and ex_name
+    
+    o removed dc.size() and added the slot 'size' instead. Also added env and data_pointer slots to class DensityContainer
+    
+    o improved documentation of S4 methods with usage section
+    
+    o gtf2df and macs2df renamed to gtf2gr and macs2gr respectively. They are now returning a GRanges object.
+
+	o annotatePeaks takes and returns only GRanges objects.
+	
+	o id2tss renamed to peak2tss and now returning an updated GRanges object 
+	
+	o plotTV accepts GRanges objects rather than data.frames for gtf and peaks input
+
+BUG FIXES
+   
+    o Removed all direct slot accessions
+
+    o Removed unnecessary call to dyn.load and dyn.unload in parseReads()
+    
+
+CHANGES IN VERSION 0.99.1
+------------------------
+
+NEW FEATURES
+
+    o plotTV returns ordering to reproduce kmeans clustering
+
+BUG FIXES
+
+    o sliceNT did not flip the exons on the negative strand
+
+    o Argument rowv to plotTV did not work with expression threshold remove_lowex 
+
+    o Installation on 32bit Windows was not possible

@@ -1,0 +1,20 @@
+Package: TransView
+Type: Package
+Title: Read density map construction and accession. Visualization of
+       ChIPSeq and RNASeq data sets.
+Version: 0.99.3
+Author: Julius Muller
+Maintainer: Bioconductor Package Maintainer <ju-mu@alumni.ethz.ch>
+Description: This package provides efficient tools to generate, access and 
+	     display read densities of sequencing based data sets such as from 
+	     RNA-Seq and ChIP-Seq.   
+URL: http://bioconductor.org/packages/release/bioc/html/TransView.html
+License: GPL-3
+LazyLoad: yes
+Depends: methods,GenomicRanges
+Imports: Rsamtools,zlibbioc,gplots,IRanges
+Suggests: RUnit,pasillaBamSubset
+biocViews: Bioinformatics,DNAMethylation,GeneExpression,Transcription,
+  	   Microarray,Sequencing,HighThroughputSequencing,ChIPseq,RNAseq,
+	   Methylseq,DataImport,Visualization,Clustering,MultipleComparisons
+LinkingTo: Rsamtools
