@@ -1,4 +1,14 @@
 
+
+CHANGES IN VERSION 1.1.0
+------------------------
+
+NEW FEATURES
+
+    o Release version with several minor, mainly manual related improvements.
+
+
+
 CHANGES IN VERSION 0.99.3
 ------------------------
 
@@ -13,9 +23,9 @@ BUG FIXES
    
     o Added PACKAGE argument to .call
     
-	o readthrough_pairs argument to parseReads declared experimental.
+    o readthrough_pairs argument to parseReads declared experimental.
 	
-	o Removed the matching RNA-Seq data set and added pasillaBamSubset as an example for RNA-Seq visualisation.
+    o Removed the matching RNA-Seq data set and added pasillaBamSubset as an example for RNA-Seq visualisation.
 	
 
 CHANGES IN VERSION 0.99.2
@@ -31,11 +41,11 @@ NEW FEATURES
     
     o gtf2df and macs2df renamed to gtf2gr and macs2gr respectively. They are now returning a GRanges object.
 
-	o annotatePeaks takes and returns only GRanges objects.
+    o annotatePeaks takes and returns only GRanges objects.
 	
-	o id2tss renamed to peak2tss and now returning an updated GRanges object 
+    o id2tss renamed to peak2tss and now returning an updated GRanges object 
 	
-	o plotTV accepts GRanges objects rather than data.frames for gtf and peaks input
+    o plotTV accepts GRanges objects rather than data.frames for gtf and peaks input
 
 BUG FIXES
    

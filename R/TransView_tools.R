@@ -84,6 +84,7 @@ macs2gr<-function(macs_peaks_xls,psize,amount="all",min_pileup=0,log10qval=0,log
 	lh<-0
 	while (tolower(substr(readLines(fh, n=1),1,3))!="chr"){lh=lh+1}
 	close(fh)
+	
 	peaks<-read.delim(macs_peaks_xls,header=T,as.is=T,skip=lh,stringsAsFactors =F)
 	
 	if( peaks[1,1]=="---"){#for older versions <=1.4
@@ -131,13 +132,13 @@ macs2gr<-function(macs_peaks_xls,psize,amount="all",min_pileup=0,log10qval=0,log
 #' @return 
 #' @author Julius Muller
 #' @export
-annotatePeaks<-function(peaks, gtf, limit=10e3, remove_unmatched=T, 
+annotatePeaks<-function(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T, 
 		unifyBy=F, unify_fun="sum_by_length", min_genelength=300){
 	
 	if(class(peaks)[1]!="GRanges")stop("peaks must be of class 'GRanges'")
 	if(class(gtf)[1]!="GRanges")stop("gtf must be of class 'GRanges'")
-	
 	if(!all(names(values(gtf)) %in% c("exon_id","transcript_id")))stop("gtf must have columns 'exon_id' and 'transcript_id'")
+	if(length(limit)==1)limit<-c(-limit,limit)
 	
 	peaks<-as.data.frame(peaks,stringsAsFactors=F)
 	peaks$seqnames<-as.character(peaks$seqnames)
@@ -156,45 +157,53 @@ annotatePeaks<-function(peaks, gtf, limit=10e3, remove_unmatched=T,
 	ptss<-first_ex[which(first_ex[,4] == "+"),c(1,2),drop=F]
 	ntss<-first_ex[which(first_ex[,4] == "-"),c(1,3),drop=F]
 	colnames(ptss)<-c("chr","TSS");colnames(ntss)<-c("chr","TSS");
-	tss<-rbind(ptss,ntss)
-	closest_ref<-list()
+	closest_ref<-list();alldists<-list()
 	for(chro in uchr){
 		peakmids<-rowMeans(peaks[which(peaks[,1] == chro),c(2,3)])
+		psubtss<-ptss[which(ptss$chr==chro),"TSS",drop=F]
+		nsubtss<-ntss[which(ntss$chr==chro),"TSS",drop=F]
 		
-		ltss<-tss[which(tss$chr==chro),"TSS",drop=F]
-		mps<-lapply(peakmids,function(y){dsp<-abs(ltss[which(abs(ltss-y)==min(abs(ltss-y))),,drop=F]-y);dsp>limit})
-		
-		too_far<-which(lapply(mps,"[",1)==T)
-		
-		if(is.na(too_far[1])){#in case of just one hit
-			closest_ref<-c(closest_ref,lapply(mps,rownames))
-		} else {
-			mps[too_far]<-NA
-			mps[-too_far]<-lapply(mps[-too_far],rownames)
-			closest_ref<-c(closest_ref,mps)
+		pselect<-function(y){
+			if(nrow(psubtss)>0){
+				xpos<-y-psubtss[which(abs(psubtss[,"TSS"]-y)==min(abs(psubtss[,"TSS"]-y))),,drop=F];
+				posdist<-ifelse(limit[1]<xpos[[1]][1]&xpos[[1]][1]<limit[2],T,F);
+			}else{posdist<-F;xpos<-limit[1]}
+			if(nrow(nsubtss)>0){
+				xneg<-nsubtss[which(abs(nsubtss[,"TSS"]-y)==min(abs(nsubtss[,"TSS"]-y))),,drop=F]-y;
+				negdist<-ifelse(limit[1]<xneg[[1]][1]&xneg[[1]][1]<limit[2],T,F);
+			}else{negdist<-F;xneg<-limit[1]}      
+			if(!posdist&!negdist){NA
+			}else if(abs(xpos[[1]][1])<abs(xneg[[1]][1])){
+				xpos[1]
+			}else {
+				xneg[1]
+			}
 		}
+		closest_ref<-c(closest_ref,lapply(peakmids,pselect))
+		
 	}
 	if(min_genelength>0){ #exclude genes smaller than min_genelength
-		cids<-unique(unlist(closest_ref)[(!is.na(unlist(closest_ref)))])
-		gtf<-gtf[which(gtf$transcript_id %in% cids),]
-		gene_lengths<-sapply(cids,function(x){y<-gtf[which(gtf$transcript_id==x),];sum(y[,3]-y[,2])})
+		cids<-unique(unlist(lapply(closest_ref,rownames)))
+		gtfx<-gtf[which(gtf$transcript_id %in% cids),]
+		gene_lengths<-sapply(cids,function(x){y<-gtfx[which(gtfx$transcript_id==x),];sum(y[,3]-y[,2])})
 		rmv<-which(gene_lengths<min_genelength)
 		if(length(rmv)>0)closest_ref[rmv]<-NA
 	}
 	## 
 	resm<-table(!is.na(closest_ref))
-	message(sprintf("Successful annotation within +/-%gkBps: %d, %d peaks without hit",limit/1000,resm["TRUE"],resm["FALSE"]))
+	message(sprintf("Successful annotation within %gkBps to %gkBps: %d, %d peaks without hit",limit[1]/1000,limit[2]/1000,resm["TRUE"],resm["FALSE"]))
 	closest_ref<-closest_ref[orirn]
 	if(remove_unmatched)closest_ref<-closest_ref[!is.na(closest_ref)]
 	
 	if(class(unifyBy)[1]=="DensityContainer"){
 		if(!spliced(unifyBy))stop("unifyBy can only be used with RNA-Seq DensityContainer")
 		
-		nurefs<-closest_ref[which(lapply(closest_ref,length)>1)]
+		nurefs<-closest_ref[which(unlist(lapply(closest_ref,nrow))>1)]
+		
 		if(length(nurefs)>0){
 			nupeaks<-names(nurefs)
-			nunrefs<-nurefs
-			names(nunrefs)<-paste(names(nunrefs),".",sep="")
+			nunrefs<-unlist(lapply(nurefs,rownames))
+			
 			nunrefs<-unlist(nunrefs)
 			gtf<-gtf[which(gtf$transcript_id %in% nunrefs),]
 			
@@ -207,15 +216,14 @@ annotatePeaks<-function(peaks, gtf, limit=10e3, remove_unmatched=T,
 		}
 		
 	}
-	transcript_id<-unlist(lapply(closest_ref,"[",1),use.names=T)
+	transcript_id<-unlist(lapply(lapply(closest_ref,rownames),"[",1),use.names=T)
 	peaks<-peaks[names(transcript_id),]
+	peaks$distance<-unlist(lapply(closest_ref,function(x){x[[1]][1]}))
+	
 	gr<-GRanges(seqnames=peaks$seqnames,ranges=IRanges(start=peaks$start,end=peaks$end),strand=first_ex[transcript_id,"strand"])
 	names(gr)<-names(transcript_id)
-	
-	if(metalen>0){
-		peaks$transcript_id<-transcript_id
-		elementMetadata(gr)<-peaks[,6:ncol(peaks)]
-	}else{elementMetadata(gr)<-c(transcript_id=transcript_id[orirn])}
+	peaks$transcript_id<-transcript_id
+	elementMetadata(gr)<-peaks[,6:ncol(peaks)]
 	gr
 }
 
@@ -236,6 +244,7 @@ gtf2gr<-function(gtf_file,chromosomes=NA,refseq_nm=F){
 	if(substr(GTF[1,2],1,3)!="chr")GTF[,2]<-paste("chr",GTF[,2],sep="")# for chromosome IDs without chr
 	if(is.character(chromosomes))GTF<-GTF[which(tolower(GTF[,2]) %in% tolower(chromosomes)),]
 	if(dim(GTF)[1]==0){cat("Chromosome names not matching GTF\n");stop()}
+	GTF<-GTF[which(GTF$strand %in% c("+","-")),]
 	transpos<-which(strsplit(GTF[1,1]," ")[[1]] == "transcript_id")+1
 	GTF[,1]<-gsub(";|\"","",unlist(lapply(strsplit(GTF[,1]," "),"[",transpos)))
 	if(refseq_nm)GTF<-GTF[which(substring(GTF[,1],1,2)=="NM"),]
@@ -272,6 +281,8 @@ gtf2gr<-function(gtf_file,chromosomes=NA,refseq_nm=F){
 peak2tss<-function(peaks, gtf, peak_len=500){
 	if(class(peaks)[1]!="GRanges")stop("peaks must be of class 'GRanges'")
 	if(class(gtf)[1]!="GRanges")stop("gtf must be of class 'GRanges'")
+	if(!all(c("exon_id","transcript_id") %in% names(values(gtf))))stop("gtf must have columns 'exon_id' and 'transcript_id'")
+	if(!"transcript_id" %in% names(values(peaks)))stop("peaks must be annotated and have colum 'transcript_id'. Please run annotatePeaks first")
 	ids<-values(peaks)$transcript_id
 	ids_fnd<-which(ids %in% values(gtf)$transcript_id)
 	if(length(ids_fnd)<length(ids)){
@@ -279,7 +290,6 @@ peak2tss<-function(peaks, gtf, peak_len=500){
 		peaks<-peaks[ids_fnd]
 		ids<-values(peaks)$transcript_id
 	}
-	if(!all(names(values(gtf)) %in% c("exon_id","transcript_id")))stop("gtf must have columns 'exon_id' and 'transcript_id'")
 	mingtf<-gtf[which(values(gtf)$transcript_id %in% ids),]
 	names(mingtf)<-paste(values(mingtf)$transcript_id,values(mingtf)$exon_id,sep=".")
 	mids<-paste(ids,"1",sep=".")

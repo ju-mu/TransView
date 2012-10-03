@@ -10,7 +10,7 @@ A convenience function to associate a genomic position to a TSS provided by a gt
 }
 
 \usage{
-annotatePeaks(peaks, gtf, limit=10e3, remove_unmatched=T, unifyBy=F, unify_fun="sum_by_length", min_genelength=300)
+annotatePeaks(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T, unifyBy=F, unify_fun="sum_by_length", min_genelength=300)
 }
 
 \arguments{
@@ -21,7 +21,7 @@ A \linkS4class{GRanges} object.
 A \linkS4class{GRanges} object with a meta data column \sQuote{transcript_id} and \sQuote{exon_id} like e.g. from \code{gtf2gr}. 
 }
   \item{limit}{
-Maximal distance in positive and negative direction for a peak - TSS association in base pairs.  
+Maximal distance range for a peak - TSS association in base pairs.  
 }
   \item{remove_unmatched}{
 If TRUE, only TSS associated peaks will be returned.
@@ -42,7 +42,7 @@ Convenience function to annotate a \linkS4class{GRanges} object having one row p
 }
 
 \value{
-\linkS4class{GRanges} object with row names according to the peak names provided and an added or updated meta data column \sQuote{transcript_id} with the associated transcript IDs.
+\linkS4class{GRanges} object with row names according to the peak names provided and an added or updated meta data column \sQuote{transcript_id} with the associated transcript IDs and distances.
 }
 \author{Julius Muller \email{ju-mu@alumni.ethz.ch}}
 \examples{

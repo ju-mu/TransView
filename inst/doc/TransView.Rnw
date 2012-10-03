@@ -34,10 +34,12 @@
 \date{\today}
 
 \begin{document}
+
 \SweaveOpts{concordance=TRUE}
 
 \maketitle
-
+\tableofcontents
+\newpage
 <<options,echo=FALSE>>=
 options(width=65)
 @

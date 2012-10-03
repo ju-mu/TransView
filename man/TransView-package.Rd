@@ -14,7 +14,7 @@ This package provides efficient tools to generate, access and display
 \tabular{ll}{
 Package: \tab TransView\cr
 Type: \tab Package\cr
-Version: \tab 0.99.2\cr
+Version: \tab 1.1.0\cr
 URL: \tab http://bioconductor.org/packages/release/bioc/html/TransView.html\cr
 License: \tab GPL-3\cr
 LazyLoad: \tab yes\cr
@@ -34,8 +34,8 @@ Index:
 \preformatted{
 DensityContainer-class
                         Class '"DensityContainer"'
-TransView-package       The TransView package: Generation of read
-                        density maps. Visualization of ChIPSeq and
+TransView-package       The TransView package: Construction of read
+                        density maps. Visualisation of ChIPSeq and
                         RNASeq data.
 annotatePeaks           Associates peaks to TSS
 gtf2gr                  GTF file parsing
