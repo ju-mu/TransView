@@ -4,7 +4,7 @@ Title: Read density map construction and accession. Visualization of
        ChIPSeq and RNASeq data sets.
 Version: 1.1.0
 Author: Julius Muller
-Maintainer: Bioconductor Package Maintainer <ju-mu@alumni.ethz.ch>
+Maintainer: Julius Muller <ju-mu@alumni.ethz.ch>
 Description: This package provides efficient tools to generate, access and 
 	     display read densities of sequencing based data sets such as from 
 	     RNA-Seq and ChIP-Seq.   
