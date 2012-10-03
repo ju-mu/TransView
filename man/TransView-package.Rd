@@ -60,7 +60,7 @@ Further information is available in the following vignettes:
 \author{
 Julius Muller
 
-Maintainer: Bioconductor Package Maintainer <ju-mu@alumni.ethz.ch>
+Maintainer: Julius Muller <ju-mu@alumni.ethz.ch>
 
 }
 
