@@ -7,6 +7,9 @@ NEW FEATURES
 
     o Release version with several minor, mainly manual related improvements.
 
+BUG FIXES
+
+    o Possible error if overlapping peaks were passed to sliceN
 
 
 CHANGES IN VERSION 0.99.3

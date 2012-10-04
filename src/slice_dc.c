@@ -121,7 +121,7 @@ SEXP slice_dc(SEXP gen_ind, SEXP l_ind,SEXP scores,SEXP start,SEXP end) {
 //			printf("Current index: %d Current Pos: %d\n###\n\n",j,gen_indp[j]);
 //		}
 
-		int windex=0;
+		int windex=0,beforeshift_minindex=minindex;
 		offset2score=l_indp[minindex]+(*startp+tofirst-gen_indp[minindex]);//here is the linear query start
 		blscore_end=gen_indp[minindex]+l_indp[minindex+1]-l_indp[minindex]-1;//here is the genomic position where the data in this block end
 
@@ -140,7 +140,7 @@ SEXP slice_dc(SEXP gen_ind, SEXP l_ind,SEXP scores,SEXP start,SEXP end) {
 			if(k<=blscore_end)slicep[rebuildc++]=*(scoresp+offset2score+windex++);//fill with scores until the next block
 			else slicep[rebuildc++]=0;//fill with scores until the next block
 		}
-
+		minindex=beforeshift_minindex;
 		FINALIZE:
 		if(scores2write!=rebuildc)printf("Expected / Found scores: %d <> %d [Sequence %d]",scores2write,rebuildc,slicen+1);
 		SET_VECTOR_ELT(dense_list, slicen, slice);//copy results to R
