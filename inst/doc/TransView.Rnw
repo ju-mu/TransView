@@ -30,7 +30,7 @@
 \SweaveOpts{eval=TRUE, keep.source=FALSE}
 
 \title{An Introduction to \TransView{}}
-\author{Julius M\"uller}
+\author{Julius M\"uller$^\ddagger$\footnote{ju-mu@alumni.ethz.ch}}
 \date{\today}
 
 \begin{document}
@@ -38,6 +38,12 @@
 \SweaveOpts{concordance=TRUE}
 
 \maketitle
+
+\begin{center}
+$^\ddagger$Institute of Molecular and Cell Biology\\ 
+Singapore
+\end{center}
+
 \tableofcontents
 \newpage
 <<options,echo=FALSE>>=

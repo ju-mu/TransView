@@ -10,7 +10,7 @@ Conversion of a gtf file from UCSC or ENSEMBL to a \linkS4class{GRanges} object 
 
 }
 \usage{
-gtf2gr(gtf_file, chromosomes=NA, refseq_nm=F)
+gtf2gr(gtf_file, chromosomes=NA, refseq_nm=F, gtf_feature=c("exon"))
 }
 
 \arguments{
@@ -22,6 +22,9 @@ A character vector with the chromosomes. Restricts the output to the case insens
 }
   \item{refseq_nm}{
 An option for GTF files based on RefSeq annotation. If TRUE only identifiers beginning with NM_ will be used.
+}
+  \item{gtf_feature}{
+Defines the GTF feature types to be returned.
 }
 }
 \details{

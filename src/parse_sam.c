@@ -69,7 +69,7 @@ void store_read(buffered_read_t *bufread, bam1_t *bamread,read_metrics_t *rm){
 
 	bufread->l_seq=rm->read_length;
 	bufread->tlen=bamread->core.isize;
-	bufread->mapq=*bam1_qual(bamread);
+	bufread->mapq=bamread->core.qual;
 	bufread->n_cigar=bamread->core.n_cigar;
 	bufread->pos=bamread->core.pos;// this program uses 1 based positions
 	bufread->revcomp=rm->revcomp;
@@ -114,8 +114,14 @@ void quality_check(read_metrics_t *rm,bam1_t *temp_read,user_arguments_t *user_a
 
 	rm->genomic_end= bam_calend(&temp_read->core,bam1_cigar(temp_read));
 
+	/* Determine read length */
+	if(bam1_pair(temp_read)){
+		++bresults->paired;
+		if (bam1_ppair(temp_read))++bresults->ppairs;
+	}
+
 	++bresults->total_reads;
-	if(*bam1_qual(temp_read) < user_args->TMAPQ || bam1_unmapped(temp_read)){
+	if(temp_read->core.qual < user_args->TMAPQ || bam1_unmapped(temp_read)){
 		++bresults->lowqual;
 		rm->skip=1;
 		return;
@@ -126,19 +132,13 @@ void quality_check(read_metrics_t *rm,bam1_t *temp_read,user_arguments_t *user_a
 		return;
 	}
 
-	/* Determine read length */
-	if(bam1_pair(temp_read)){
-		++bresults->paired;
-		if (bam1_ppair(temp_read))++bresults->ppairs;
-	}
-
 	if(!user_args->PAIRED){
 		rm->revcomp=bam1_strand(temp_read);
 		rm->read_length=bam_cigar2qlen(&temp_read->core,bam1_cigar(temp_read));
 	} else if (bam1_ppair(temp_read) && !bam1_notprimary(temp_read)){
 		rm->revcomp=bam1_revpair(temp_read);
-		if(!user_args->READTHROUGH){rm->read_length=bam_cigar2qlen(&temp_read->core,bam1_cigar(temp_read));
-		}else if(temp_read->core.isize!=0){
+		if(!user_args->READTHROUGH){rm->read_length=bam_cigar2qlen(&temp_read->core,bam1_cigar(temp_read));//sets the read length only!!
+		}else if(temp_read->core.isize!=0 ){
 				if((bam1_firstr(temp_read)&&!bam1_revpair(temp_read))||(bam1_secondr(temp_read)&&bam1_mrevpair(temp_read))){
 					rm->read_length=temp_read->core.isize;
 				} else {
@@ -251,7 +251,7 @@ seq_block_t seq_density(usersize *cptr, uint32_t *databl_start, uint32_t *databl
 		if (bresults.file_status == -1){// EOF
 			if (*first_call){// EOF
 				warning("No compatible read found for this settings!\n");
-				if(!bresults.paired && user_args->PAIRED)warning("No perfect pair found in this file. 'paired_only' option cannot be used!\n");
+				if(!bresults.paired && user_args->PAIRED)warning("No proper pair [flag 2] found in this file. \nSet 'paired_only' to FALSE\n");
 				bresults.file_status = -10;
 				return bresults;
 			}

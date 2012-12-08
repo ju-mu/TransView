@@ -137,7 +137,7 @@ annotatePeaks<-function(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T,
 	
 	if(class(peaks)[1]!="GRanges")stop("peaks must be of class 'GRanges'")
 	if(class(gtf)[1]!="GRanges")stop("gtf must be of class 'GRanges'")
-	if(!all(names(values(gtf)) %in% c("exon_id","transcript_id")))stop("gtf must have columns 'exon_id' and 'transcript_id'")
+	if(!all(c("exon_id","transcript_id") %in% names(values(gtf))))stop("gtf must have columns 'exon_id' and 'transcript_id'")
 	if(length(limit)==1)limit<-c(-limit,limit)
 	
 	peaks<-as.data.frame(peaks,stringsAsFactors=F)
@@ -235,39 +235,44 @@ annotatePeaks<-function(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T,
 #' @return 
 #' @author Julius Muller
 #' @export
-gtf2gr<-function(gtf_file,chromosomes=NA,refseq_nm=F){
+gtf2gr<-function(gtf_file,chromosomes=NA,refseq_nm=F, gtf_feature=c("exon")){
 	GTF <- read.table(gtf_file, sep="\t", header=F, stringsAsFactors=F, colClasses=c(rep("character", 3), rep("numeric", 2), rep("character", 4)))[,c(9,1,4,5,7,3)]
 	colnames(GTF)<-c("transcript_id","chr","start","end","strand","type")
-	GTF<-GTF[which(GTF$type =="exon"),]
+	GTF<-GTF[which(GTF$type %in% gtf_feature),]
 	GTF<-GTF[which(GTF$end-GTF$start > 1),]
+	GTF<-GTF[,-which(colnames(GTF)=="type")]
 	if(dim(GTF)[1]==0)stop("No matching exon entries found in GTF")
 	if(substr(GTF[1,2],1,3)!="chr")GTF[,2]<-paste("chr",GTF[,2],sep="")# for chromosome IDs without chr
 	if(is.character(chromosomes))GTF<-GTF[which(tolower(GTF[,2]) %in% tolower(chromosomes)),]
 	if(dim(GTF)[1]==0){cat("Chromosome names not matching GTF\n");stop()}
 	GTF<-GTF[which(GTF$strand %in% c("+","-")),]
 	transpos<-which(strsplit(GTF[1,1]," ")[[1]] == "transcript_id")+1
+	gpos<-which(strsplit(GTF[1,1]," ")[[1]] == "gene_id")+1
+	if(length(gpos)>0){
+		genes<-gsub(";|\"","",unlist(lapply(strsplit(GTF[,1]," "),"[",gpos)))
+		GTF$gene_id<-genes
+	}
 	GTF[,1]<-gsub(";|\"","",unlist(lapply(strsplit(GTF[,1]," "),"[",transpos)))
 	if(refseq_nm)GTF<-GTF[which(substring(GTF[,1],1,2)=="NM"),]
-	neggid<-unique(GTF[which(GTF$strand == "-"),][,1])
-	negg<-GTF[which(GTF$transcript_id %in% neggid),]
-	GTF<-GTF[-which(GTF$transcript_id %in% neggid),]
-	GTF<-GTF[order(GTF$chr,GTF$transcript_id,GTF$start),1:5]
-	GTF<-rbind(GTF,negg[order(negg$chr,negg$transcript_id,negg$start,decreasing=T),1:5])
-	cat(paste(dim(GTF)[1],"exons found\n"))  
 	
-#   rownames(GTF)<-make.unique(GTF[,1]) 
-#   GTF<-GTF[order(GTF$chr,GTF$transcript_id,GTF$start),]
-#   gr<-GRanges(seqnames=GTF$chr,ranges=IRanges(start=GTF$start,end=GTF$end),strand=GTF$strand,Transcript=GTF$transcript_id )
-#   names(gr)<-rownames(GTF)
+	GTF_se<-GTF[which(GTF$strand == "+"),]
+	GTF_se<-GTF_se[order(GTF_se$chr,GTF_se$transcript_id,GTF_se$start),]
+	GTF_se<-cbind(GTF_se,ExonNr=ave(1:length(GTF_se$transcript_id),GTF_se$transcript_id, FUN=rank ))#rank 30% slower compared to make.unique
 	
-	GTF<-cbind(GTF,ExonNr=ave(1:length(GTF$transcript_id),GTF$transcript_id, FUN=rank ))#30% slower compared to make.unique
+	GTF_as<-GTF[which(GTF$strand == "-"),]
+	GTF_as<-GTF_as[order(GTF_as$chr,GTF_as$transcript_id,GTF_as$start,decreasing=T),]
+	GTF_as<-cbind(GTF_as,ExonNr=ave(1:length(GTF_as$transcript_id),GTF_as$transcript_id, FUN=rank ))
+	
+	GTF<-rbind(GTF_se,GTF_as)
 	GTF<-GTF[order(GTF$chr,GTF$transcript_id,GTF$start),]
+	cat(paste(dim(GTF)[1],"rows matching\n"))  
+	
 	gr<-GRanges(seqnames=GTF$chr,ranges=IRanges(start=GTF$start,end=GTF$end),strand=GTF$strand,transcript_id=GTF$transcript_id,exon_id=GTF$ExonNr )
+	gr$gene_id<-GTF$gene_id
 	names(gr)<-paste(GTF$transcript_id,GTF$ExonNr,sep=".")
 	
 	gr  
 }
-
 
 
 #' Convert a vector of IDs matching the transcript_id column of the GTF into a TSS centred data.frame

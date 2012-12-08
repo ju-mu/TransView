@@ -26,8 +26,6 @@ Bioinformatics,DNAMethylation,GeneExpression,Transcription,Microarray,
 Sequencing,HighThroughputSequencing,ChIPseq,RNAseq,Methylseq,DataImport,
 Visualization,Clustering,MultipleComparisons\cr
 LinkingTo: \tab Rsamtools\cr
-Packaged: \tab 2012-09-23 17:29:16 UTC; eg1\cr
-Built: \tab R 2.15.1; x86_64-pc-linux-gnu; 2012-09-24 02:30:31 UTC; unix\cr
 }
 
 Index:
