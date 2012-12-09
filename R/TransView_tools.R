@@ -54,13 +54,14 @@
 	} else return(file.path(system.file(package=qlib),"libs",paste0(qlib, .Platform$dynlib.ext)))
 }
 
-#' Splits a list of densities into wsize windows with a unique values calculated by window_fun
+#' Splits a list of densities into wsize windows with a unique value calculated by window_fun
 #'
 #' @name .gene2window
 #' @docType methods
 #' @author Julius Muller
 .gene2window<-function(dlist,wsize,window_fun="sum_by_length"){
-	if(window_fun=="sum_by_length"){lapply(dlist,function(d){y<-split(d,ceiling(seq_along(d)/(length(d)/wsize)));unlist(lapply(y,function(x){sum(x)/length(x)}),use.names=T)}) 
+	if(window_fun=="sum_by_length"){lapply(dlist,function(d){y<-split(d,ceiling(seq_along(d)/(length(d)/wsize)));sapply(y,function(x){median(x)})}) 
+	}else if(window_fun=="sum_by_length_mean"){lapply(dlist,function(d){y<-split(d,ceiling(seq_along(d)/(length(d)/wsize)));sapply(y,function(x){mean(x)})}) 
 	}else if(window_fun=="approx")sapply(lapply(dlist,approx,n=wsize), "[", "y")
 }
 

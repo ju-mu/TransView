@@ -1,5 +1,5 @@
 
-CHANGES IN VERSION 1.1.1
+CHANGES IN VERSION 1.1.2
 ------------------------
 
 NEW FEATURES
@@ -7,12 +7,15 @@ NEW FEATURES
     o Added an option to gtf2gr which defines the GTF feature type entry to be filtered during parsing  
     o gtf2gr also incorporates the gene_id if present in the input gtf file
 
+    
+ 
+CHANGES IN VERSION 1.1.1
+------------------------
 
 BUG FIXES
 
     o Fixed a bug which resulted in wrong quality score cut off in parseReads()
     o annotatePeaks() did not accept input gtf files with present values
-    
     
 
 CHANGES IN VERSION 1.1.0
