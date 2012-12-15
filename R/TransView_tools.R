@@ -59,9 +59,9 @@
 #' @name .gene2window
 #' @docType methods
 #' @author Julius Muller
-.gene2window<-function(dlist,wsize,window_fun="sum_by_length"){
-	if(window_fun=="sum_by_length"){lapply(dlist,function(d){y<-split(d,ceiling(seq_along(d)/(length(d)/wsize)));sapply(y,function(x){median(x)})}) 
-	}else if(window_fun=="sum_by_length_mean"){lapply(dlist,function(d){y<-split(d,ceiling(seq_along(d)/(length(d)/wsize)));sapply(y,function(x){mean(x)})}) 
+.gene2window<-function(dlist,wsize,window_fun="median"){
+	if(window_fun=="median"){lapply(dlist,function(d){y<-split(d,ceiling(seq_along(d)/(length(d)/wsize)));sapply(y,function(x){median(x)})}) 
+	}else if(window_fun=="mean"){lapply(dlist,function(d){y<-split(d,ceiling(seq_along(d)/(length(d)/wsize)));sapply(y,function(x){mean(x)})}) 
 	}else if(window_fun=="approx")sapply(lapply(dlist,approx,n=wsize), "[", "y")
 }
 
@@ -78,7 +78,7 @@
 #' @return 
 #' @author Julius Muller
 #' @export
-macs2gr<-function(macs_peaks_xls,psize,amount="all",min_pileup=0,log10qval=0,log10pval=0,
+macs2gr<-function(macs_peaks_xls,psize=500,amount="all",min_pileup=0,log10qval=0,log10pval=0,
 		fenrichment=0,peak_mid="summit"){
 	
 	fh<-file(macs_peaks_xls,"r")
@@ -100,9 +100,12 @@ macs2gr<-function(macs_peaks_xls,psize,amount="all",min_pileup=0,log10qval=0,log
 	if(log10qval>0)peaks<-peaks[which(peaks[,9]>log10qval),]
 	if(log10pval>0)peaks<-peaks[which(peaks[,7]>log10pval),]
 	if(fenrichment>0)peaks<-peaks[which(peaks[,8]>fenrichment),]
+	if(psize!="preserve"&!is.numeric(psize))stop("Please provide psize or set psize to 'preserve'")
 	cat(paste(dim(peaks)[1],"peaks matching\n"))
 	peaks<-peaks[order(peaks[,6],decreasing=T),]
-	if(peak_mid=="summit"){
+	if(psize=="preserve"){
+		peaks<-peaks[,c(1,2,3,6,8,7)]
+	}else if(peak_mid=="summit"){
 		peaks<-peaks[,c(1,5,5,6,8,7)]
 		peaks[,2]<-peaks[,2]-(psize/2)
 		peaks[,3]<-peaks[,3]+(psize/2)
@@ -112,6 +115,8 @@ macs2gr<-function(macs_peaks_xls,psize,amount="all",min_pileup=0,log10qval=0,log
 		peaks[,2]<-peaks[,2]-(psize/2)
 		peaks[,3]<-peaks[,3]+(psize/2)
 	}else stop(paste("peak_mid='",peak_mid,"' not implemented",sep=""))
+	
+	
 	if(amount!="all")peaks<-peaks[1:amount,]
 	colnames(peaks)<-c("chr","start","end","pileup","enrichment","log10_pval")
 	gr<-GRanges(ranges=IRanges(start=peaks$start,end=peaks$end),strand="*",seqnames=peaks$chr)
@@ -134,7 +139,7 @@ macs2gr<-function(macs_peaks_xls,psize,amount="all",min_pileup=0,log10qval=0,log
 #' @author Julius Muller
 #' @export
 annotatePeaks<-function(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T, 
-		unifyBy=F, unify_fun="sum_by_length", min_genelength=300){
+		unifyBy=F, unify_fun="mean", min_genelength=300){
 	
 	if(class(peaks)[1]!="GRanges")stop("peaks must be of class 'GRanges'")
 	if(class(gtf)[1]!="GRanges")stop("gtf must be of class 'GRanges'")
@@ -147,11 +152,15 @@ annotatePeaks<-function(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T,
 	
 	uchr<-unique(peaks[,1])
 	orirn<-rownames(peaks)
+	if("gene_id" %in% names(values(gtf))){
+		gtf<-as.data.frame(gtf,stringsAsFactors=F)[,c("seqnames", "start", "end", "strand","transcript_id","exon_id","gene_id")]
+		gtf$gene_id<-as.character(gtf$gene_id)
+	} else {gtf<-as.data.frame(gtf,stringsAsFactors=F)[,c("seqnames", "start", "end", "strand","transcript_id","exon_id")]}
 	
-	gtf<-as.data.frame(gtf,stringsAsFactors=F)[,c("seqnames", "start", "end", "strand","transcript_id","exon_id")]
 	gtf$seqnames<-as.character(gtf$seqnames)
 	gtf$transcript_id<-as.character(gtf$transcript_id)
 	gtf$strand<-as.character(gtf$strand)
+	
 	gtf<-gtf[which(gtf[,1] %in% uchr),]
 	first_ex<-gtf[gtf$exon_id==1,]
 	rownames(first_ex)<-first_ex$transcript_id
@@ -210,7 +219,8 @@ annotatePeaks<-function(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T,
 			
 			sob<-sliceNT(unifyBy,as.character(nunrefs),gtf,concatenate=T,stranded=T)
 			
-			if(is.character(unify_fun) && unify_fun=="sum_by_length"){resl<-lapply(sob,function(x){sum(x)/length(x)})
+			if(is.character(unify_fun) && unify_fun=="mean"){resl<-lapply(sob,function(x){mean(x)})
+			}else if(is.character(unify_fun) && unify_fun=="median"){resl<-lapply(sob,function(x){median(x)})
 			}else{resl<-lapply(sob,function(x){unify_fun(x)})}
 			
 			closest_ref[nupeaks]<-lapply(nupeaks,function(x){mv<-nurefs[[x]];names(which.max(resl[mv]))})
@@ -224,6 +234,7 @@ annotatePeaks<-function(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T,
 	gr<-GRanges(seqnames=peaks$seqnames,ranges=IRanges(start=peaks$start,end=peaks$end),strand=first_ex[transcript_id,"strand"])
 	names(gr)<-names(transcript_id)
 	peaks$transcript_id<-transcript_id
+	if("gene_id" %in% colnames(gtf))peaks$gene_id<-gtf[match(transcript_id,gtf$transcript_id),"gene_id"]
 	elementMetadata(gr)<-peaks[,6:ncol(peaks)]
 	gr
 }

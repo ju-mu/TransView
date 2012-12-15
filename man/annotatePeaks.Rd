@@ -10,7 +10,7 @@ A convenience function to associate a genomic position to a TSS provided by a gt
 }
 
 \usage{
-annotatePeaks(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T, unifyBy=F, unify_fun="sum_by_length", min_genelength=300)
+annotatePeaks(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T, unifyBy=F, unify_fun="mean", min_genelength=300)
 }
 
 \arguments{
@@ -27,10 +27,10 @@ Maximal distance range for a peak - TSS association in base pairs.
 If TRUE, only TSS associated peaks will be returned.
 }
   \item{unifyBy}{
-If a transcript has multiple isoforms, the peak will be associated to all of them. In order to reduce the mapping to one unique isoform, a \code{DensityContainer} can be provided. The choice of the returned isoform will be made based on unify_fun. If the character string \sQuote{first} is provided, the resulting column transcript_id will contain arbitrarily the first ID found.  
+If a transcript has multiple isoforms, the peak will be associated arbitrarily to the first ID found. In order associate a peak to an isoform with specific characteristics, a \code{DensityContainer} can be provided. The choice of the returned isoform will be made based on unify_fun.
 }
   \item{unify_fun}{
-A function which will choose the isoform in case of non unique peak - TSS associations. Defaults to the isoform with the highest sum of the reads divided by the length in base pairs \code{function(x){sum(x)/length(x)}}.
+A function which will choose the isoform in case of non unique peak - TSS associations. Defaults to the isoform with the highest mean score \code{function(x){mean(x)}}.
 }
   \item{min_genelength}{
 Genes with a total sum of all exons smaller than this value will be excluded from the output.

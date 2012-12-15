@@ -18,7 +18,7 @@ macs2gr(macs_peaks_xls, psize, amount="all", min_pileup=0, log10qval=0, log10pva
 Full path to the file ending with \sQuote{_peaks.xls} located in the output folder of a MACS run.
 }
   \item{psize}{
-An integer setting the total length of the peaks.
+An integer setting the total length of the peaks. Setting psize to \sQuote{preserve} will keep the original peak lengths from the output file and override \code{peak_mid}. Note that this is not compatible with \code{plotTV}
 }
   \item{amount}{
 Amount of peaks returned. If an integer is provided, the returned peaks will be limited to this amount after sorting by pile up score.

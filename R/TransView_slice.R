@@ -23,6 +23,11 @@
 	orinames<-rownames(ranges)
 	nrns<-paste("P",1:length(orinames),sep="")
 	rownames(ranges)<-nrns
+	if(!(class(ranges[,2])[1] %in% c("numeric","integer")) || !(class(ranges[,3])[1] %in% c("numeric","integer"))){
+		mode(ranges[,2])<-"integer"
+		mode(ranges[,3])<-"integer"
+		if(any(is.na(ranges[,2])) || any(is.na(ranges[,3])))stop("column 2 [start] and column 3 [end] in ranges must be numeric")
+	}
 	ranges<-ranges[order(ranges[,1],ranges[,2]),,drop=F]
 	seqes<-vector("list", length(ranges[,1]))
 	names(seqes)<-rownames(ranges)
@@ -92,34 +97,36 @@ setMethod("sliceN", signature(dc="DensityContainer"), .sliceN)
 #' @author Julius Muller
 #' @export
 .slice1<-function(dc,chrom,start,end,control=FALSE,input_method="-",treads_norm=TRUE) {
-		env<-env(dc)
-		if(start<1)start=1
-		if(start>end){
-			endt<-end
-			end<-start
-			start<-endt
-		}
-		if(start==end)stop("The queried element is length 0")
-		chrl<-paste(chrom,"_lind",sep="");chrg<-paste(chrom,"_gind",sep="");
-		numvec<-.Call("slice_dc",env[[data_pointer(dc)]][[chrg]],env[[data_pointer(dc)]][[chrl]],env[[data_pointer(dc)]][[chrom]],start,end,PACKAGE = "TransView")[[1]];
+	env<-env(dc)
+	if(start<1)start=1
+	if(start>end)stop("end smaller than start")
+
+	if(!(class(start)[1] %in% c("numeric","integer")) || !(class(end)[1] %in% c("numeric","integer"))){
+		mode(start)<-"integer"
+		mode(end)<-"integer"
+		if(is.na(start) || is.na(end))stop("start and end must be numeric")
+	}
+
+	chrl<-paste(chrom,"_lind",sep="");chrg<-paste(chrom,"_gind",sep="");
+	numvec<-.Call("slice_dc",env[[data_pointer(dc)]][[chrg]],env[[data_pointer(dc)]][[chrl]],env[[data_pointer(dc)]][[chrom]],start,end,PACKAGE = "TransView")[[1]];
+	
+	if(!is.logical(control)){#check input
+		env<-env(control)
+		if(class(control)[1]!="DensityContainer")stop("Input must be of class 'DensityContainer'")
+		subname<-data_pointer(control)
+		input_dense<-.Call("slice_dc",env[[subname]][[chrg]],env[[subname]][[chrl]],env[[subname]][[chrom]],start,end,PACKAGE = "TransView")[[1]]
 		
-		if(!is.logical(control)){#check input
-			env<-env(control)
-			if(class(control)[1]!="DensityContainer")stop("Input must be of class 'DensityContainer'")
-			subname<-data_pointer(control)
-			input_dense<-.Call("slice_dc",env[[subname]][[chrg]],env[[subname]][[chrl]],env[[subname]][[chrom]],start,end,PACKAGE = "TransView")[[1]]
-			
-			if(treads_norm){
-				norm_fact<-fmapmass(dc)/fmapmass(dc)#read normalization factor
-				input_dense<-input_dense*norm_fact
-			}
-			
-			if(input_method=="-"){numvec<-round(numvec-input_dense)
-			}else if(input_method=="/"){
-				numvec<-log2((numvec+1)/(input_dense+1))
-			}else stop("input_method must be either '+' or '/'")
+		if(treads_norm){
+			norm_fact<-fmapmass(dc)/fmapmass(dc)#read normalization factor
+			input_dense<-input_dense*norm_fact
 		}
-		return(numvec)
+		
+		if(input_method=="-"){numvec<-round(numvec-input_dense)
+		}else if(input_method=="/"){
+			numvec<-log2((numvec+1)/(input_dense+1))
+		}else stop("input_method must be either '+' or '/'")
+	}
+	return(numvec)
 }
 
 

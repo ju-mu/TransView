@@ -31,6 +31,13 @@
 	}else if(class(gtf)[1] == "data.frame"){
 		if(!("transcript_id" %in% colnames(gtf)))stop("Column 'transcript_id' missing in gtf")
 		transc<-gtf[which(gtf[,'transcript_id'] %in% tnames),1:5]
+		
+		if(!(class(transc[,2])[1] %in% c("numeric","integer")) || !(class(transc[,3])[1] %in% c("numeric","integer"))){
+			mode(transc[,2])<-"integer"
+			mode(transc[,3])<-"integer"
+			if(any(is.na(transc[,2])) || any(is.na(transc[,3])))stop("column 2 [start] and column 3 [end] in gtf must be numeric")
+		}
+		
 	}else{stop("gtf must be of class GRanges or data.frame")}
 	
 	if(length(tnames)!=length(unique(transc$transcript_id)))warning(sprintf("%d geneIDs could not be located in GTF\n",length(unique(tnames))-length(unique(transc$transcript_id))))
@@ -132,6 +139,11 @@ setMethod("sliceNT", signature(dc="DensityContainer",tnames="character"), .slice
 	}else if(class(gtf)[1] == "data.frame"){
 		if(!("transcript_id" %in% colnames(gtf)))stop("Column 'transcript_id' missing in gtf")
 		transc<-gtf[which(gtf[,'transcript_id']  == tname),1:4]
+		if(!(class(transc[,2])[1] %in% c("numeric","integer")) || !(class(transc[,3])[1] %in% c("numeric","integer"))){
+			mode(transc[,2])<-"integer"
+			mode(transc[,3])<-"integer"
+			if(any(is.na(transc[,2])) || any(is.na(transc[,3])))stop("column 2 [start] and column 3 [end] in gtf must be numeric")
+		}
 	}else{stop("gtf must be of class GRanges or data.frame")}
 
 	if(dim(transc)[1]==0){
