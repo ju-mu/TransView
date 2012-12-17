@@ -20,7 +20,7 @@
 	env1<-env(dc)
 	oritnames<-tnames
 	tnames<-unique(tnames)
-	
+	skip_chr<-c()
 	if(class(gtf)[1] == "GRanges"){
 		if(!("transcript_id" %in% colnames(values(gtf))))stop("Column 'transcript_id' missing in gtf metadata")
 		transc<-gtf[which(values(gtf)$transcript_id %in% tnames)]
@@ -59,7 +59,9 @@
 		dp<-data_pointer(dc)
 		tlist<-.Call("slice_dc",env1[[dp]][[chrg]],env1[[dp]][[chrl]],env1[[dp]][[chrom]],uslices[,1],uslices[,2],PACKAGE = "TransView")
 		names(tlist)<-slicenames
-		if(!is.logical(control)){#check input
+		if(all(is.na(tlist))){
+			skip_chr<-c(skip_chr,chrom)
+		} else if(!is.logical(control)){#check input
 			if(class(control)[1]!="DensityContainer")stop("Input must be of class 'DensityContainer'")
 			dp2<-data_pointer(control)
 			input_dense<-.Call("slice_dc",env2[[dp2]][[chrg]],env2[[dp2]][[chrl]],env2[[dp2]][[chrom]],uslices[,1],uslices[,2],PACKAGE = "TransView")
@@ -89,6 +91,7 @@
 		seqes<-seqes[sortind]
 	}
 	gc()
+	if(length(skip_chr)>0)warning(sprintf("The following chromosomes were not found in the DensityContainer:\n%s",paste(skip_chr,collapse="|")))
 	if(concatenate){
 		b<-vector("list", length(unique(transc[,5])))
 		names(b)<-unique(transc[,5])
@@ -158,11 +161,13 @@ setMethod("sliceNT", signature(dc="DensityContainer",tnames="character"), .slice
 	ends<-transc[,"end"]
 	
 	tlist<-.Call("slice_dc",env[[data_pointer(dc)]][[chrg]],env[[data_pointer(dc)]][[chrl]],env[[data_pointer(dc)]][[chrom]],starts,ends,PACKAGE = "TransView")
-	
-	if(!is.logical(control)){#check input
+	if(all(is.na(tlist))){
+		warning(sprintf("%s was not found in the DensityContainer:\n%s",chrom))
+	}else if(!is.logical(control)){#check input
 		subname<-data_pointer(control)
 		
 		input_dense<-.Call("slice_dc",env2[[subname]][[chrg]],env2[[subname]][[chrl]],env2[[subname]][[chrom]],starts,ends,PACKAGE = "TransView")
+		
 		if(treads_norm){
 			norm_fact<-nreads(dc)/nreads(control)#read normalization factor
 			input_dense<-lapply(input_dense,"*",norm_fact)

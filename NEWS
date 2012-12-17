@@ -1,4 +1,16 @@
 
+CHANGES IN VERSION 1.1.4
+------------------------
+
+NEW FEATURES
+
+    o All slice methods return NA instead of NULL in case of chromosome miss matches or negative query lengths. 
+	
+BUG FIXES
+
+    o Using toRle in the slice methods will work with missing values. 
+
+
 CHANGES IN VERSION 1.1.3
 ------------------------
 

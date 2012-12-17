@@ -63,12 +63,18 @@ SEXP slice_dc(SEXP gen_ind, SEXP l_ind,SEXP scores,SEXP start,SEXP end) {
 
 		if(scores2write<1){
 			error("Requested length < 1! start: %d <= end: %d",*startp,*endp);
-			PROTECT(slice = R_NilValue);
+			//PROTECT(slice = R_NilValue);
+			PROTECT(slice = NEW_INTEGER(1));
+			int *slicep= INTEGER_POINTER(slice);
+			slicep[0]=NA_INTEGER;
 			goto FINALIZE;
 		}else if(LENGTH(scores)<1){
 			rebuildc=scores2write;
-			warning("No scores found for this chromosome in sequence %d!\n",slicen+1);
-			PROTECT(slice = R_NilValue);
+			//warning("No scores found for this chromosome in sequence %d!\n",slicen+1);
+			//PROTECT(slice = R_NilValue);
+			PROTECT(slice = NEW_INTEGER(1));
+			int *slicep= INTEGER_POINTER(slice);
+			slicep[0]=NA_INTEGER;
 			goto FINALIZE;
 		}
 
@@ -88,6 +94,7 @@ SEXP slice_dc(SEXP gen_ind, SEXP l_ind,SEXP scores,SEXP start,SEXP end) {
 			warning("Start position %d after last read %d (#%d)!\n",*startp,gen_indp[total_indexes-1],slicen+1);
 			goto FINALIZE;
 		}
+
 
 
 		maxindex=total_indexes-1;

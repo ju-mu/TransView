@@ -155,8 +155,6 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 	
 	### ###
 	
-	if(verbose>0)message("Plotting...")
-	
 	#### Remove not expressed ####
 	if(remove_lowex>0 && argcRNA>0){
 		lowex<-which((rowSums(rnaj)/glens)<remove_lowex)
@@ -183,6 +181,7 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 	#### CLUSTER ####
 	
 	if(cluster!="none"){
+		if(verbose>0)message("Clustering...")
 		if(argc && !hmapc && !argcRNA){cob<-do.call("cbind",plotmat)
 		}else if(argcRNA && !argc && !hmapc){cob<-do.call("cbind",plotmatRNA)                   
 		}else if(hmapc && !argcRNA && !argc){cob<-plotmatRNA
@@ -206,6 +205,8 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 	}
 	
 	### ###
+	
+	if(verbose>0)message("Fetching plotting...")
 	
 	#### Re scale expression ####
 	
