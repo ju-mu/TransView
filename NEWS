@@ -1,4 +1,18 @@
 
+
+CHANGES IN VERSION 1.1.5
+------------------------
+
+NEW FEATURES
+
+    o gtf2gr transcript_id and gene_id attribute names can now be customized.
+
+BUG FIXES
+
+    o annotatePeaks returned an error when remove_unmatched was disabled. 
+    o Increased filter accuracy of annotatePeaks when min_genelength > 0.
+    
+
 CHANGES IN VERSION 1.1.4
 ------------------------
 

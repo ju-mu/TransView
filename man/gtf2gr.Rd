@@ -10,7 +10,7 @@ Conversion of a gtf file from UCSC or ENSEMBL to a \linkS4class{GRanges} object 
 
 }
 \usage{
-gtf2gr(gtf_file, chromosomes=NA, refseq_nm=F, gtf_feature=c("exon"))
+gtf2gr(gtf_file, chromosomes=NA, refseq_nm=F, gtf_feature=c("exon"),transcript_id="transcript_id",gene_id="gene_id")
 }
 
 \arguments{
@@ -25,6 +25,12 @@ An option for GTF files based on RefSeq annotation. If TRUE only identifiers beg
 }
   \item{gtf_feature}{
 Defines the GTF feature types to be returned.
+}
+  \item{transcript_id}{
+Defines name of the attribute within the attribute list which should be used as transcript IDs.
+}
+  \item{gene_id}{
+Defines name of the attribute within the attribute list which should be used as gene IDs.
 }
 }
 \details{

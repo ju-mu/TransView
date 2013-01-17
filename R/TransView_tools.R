@@ -193,11 +193,25 @@ annotatePeaks<-function(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T,
 		
 	}
 	if(min_genelength>0){ #exclude genes smaller than min_genelength
-		cids<-unique(unlist(lapply(closest_ref,rownames)))
+		mads<-lapply(closest_ref,rownames)
+		cids<-unique(unlist(mads))
 		gtfx<-gtf[which(gtf$transcript_id %in% cids),]
 		gene_lengths<-sapply(cids,function(x){y<-gtfx[which(gtfx$transcript_id==x),];sum(y[,3]-y[,2])})
-		rmv<-which(gene_lengths<min_genelength)
-		if(length(rmv)>0)closest_ref[rmv]<-NA
+		rmv<-names(which(gene_lengths<min_genelength))
+		if(length(rmv)>0){
+			closest_ref<-
+					lapply(closest_ref,
+							function(x){
+								if(length(x)==1 && is.na(x)){NA
+								}else{
+									rmm<-rownames(x) %in% rmv
+									if(all(rmm)){NA
+									}else if(all(!rmm)){x
+									}else{x[which(!rmm),,drop=F]
+									}
+								}
+							})
+		}
 	}
 	## 
 	resm<-table(!is.na(closest_ref))
@@ -227,11 +241,14 @@ annotatePeaks<-function(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T,
 		}
 		
 	}
-	transcript_id<-unlist(lapply(lapply(closest_ref,rownames),"[",1),use.names=T)
+	transcript_id<-lapply(lapply(closest_ref,rownames),"[",1)
+	if(!remove_unmatched)transcript_id[which(unlist(lapply(transcript_id,is.null)))]<-NA
+	transcript_id<-unlist(transcript_id,use.names=T)
 	peaks<-peaks[names(transcript_id),]
 	peaks$distance<-unlist(lapply(closest_ref,function(x){x[[1]][1]}))
-	
-	gr<-GRanges(seqnames=peaks$seqnames,ranges=IRanges(start=peaks$start,end=peaks$end),strand=first_ex[transcript_id,"strand"])
+	strs<-first_ex[transcript_id,"strand"]
+	if(!remove_unmatched)strs[which(is.na(strs))]<-"*"
+	gr<-GRanges(seqnames=peaks$seqnames,ranges=IRanges(start=peaks$start,end=peaks$end),strand=strs)
 	names(gr)<-names(transcript_id)
 	peaks$transcript_id<-transcript_id
 	if("gene_id" %in% colnames(gtf))peaks$gene_id<-gtf[match(transcript_id,gtf$transcript_id),"gene_id"]
@@ -247,7 +264,7 @@ annotatePeaks<-function(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T,
 #' @return 
 #' @author Julius Muller
 #' @export
-gtf2gr<-function(gtf_file,chromosomes=NA,refseq_nm=F, gtf_feature=c("exon")){
+gtf2gr<-function(gtf_file,chromosomes=NA,refseq_nm=F, gtf_feature=c("exon"),transcript_id="transcript_id",gene_id="gene_id"){
 	GTF <- read.table(gtf_file, sep="\t", header=F, stringsAsFactors=F, colClasses=c(rep("character", 3), rep("numeric", 2), rep("character", 4)))[,c(9,1,4,5,7,3)]
 	colnames(GTF)<-c("transcript_id","chr","start","end","strand","type")
 	GTF<-GTF[which(GTF$type %in% gtf_feature),]
@@ -258,8 +275,8 @@ gtf2gr<-function(gtf_file,chromosomes=NA,refseq_nm=F, gtf_feature=c("exon")){
 	if(is.character(chromosomes))GTF<-GTF[which(tolower(GTF[,2]) %in% tolower(chromosomes)),]
 	if(dim(GTF)[1]==0){cat("Chromosome names not matching GTF\n");stop()}
 	GTF<-GTF[which(GTF$strand %in% c("+","-")),]
-	transpos<-which(strsplit(GTF[1,1]," ")[[1]] == "transcript_id")+1
-	gpos<-which(strsplit(GTF[1,1]," ")[[1]] == "gene_id")+1
+	transpos<-which(strsplit(GTF[1,1]," ")[[1]] == transcript_id)+1
+	gpos<-which(strsplit(GTF[1,1]," ")[[1]] == gene_id)+1
 	if(length(gpos)>0){
 		genes<-gsub(";|\"","",unlist(lapply(strsplit(GTF[,1]," "),"[",gpos)))
 		GTF$gene_id<-genes
