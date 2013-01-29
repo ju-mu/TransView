@@ -1,4 +1,12 @@
 
+CHANGES IN VERSION 1.1.6
+------------------------
+
+BUG FIXES
+
+    o Fixed an error which occurred if annotatePeaks was used with unifyBy.
+    o sliceNT did not flip the exons on the negative strand in some situations.
+
 
 CHANGES IN VERSION 1.1.5
 ------------------------

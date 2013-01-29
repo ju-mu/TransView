@@ -206,7 +206,7 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 	
 	### ###
 	
-	if(verbose>0)message("Fetching plotting...")
+	if(verbose>0)message("Plotting...")
 	
 	#### Re scale expression ####
 	

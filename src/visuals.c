@@ -66,7 +66,7 @@ void printStatus(char *cur_chrom, uint32_t *chrom_numb, uint32_t total_chrom)
     for (; i<20; i++)printf(" ");//overwrite previous longer chromosome names
     if(total_chrom+1==*chrom_numb)printf("\n");//if the end is reached, go to the next line
     R_FlushConsole();//not necessary?
-    R_CheckUserInterrupt();/* Minor Memory leak -> At this time struct filter_t, the bam_header and proc_chrom are allocated. */
+    R_CheckUserInterrupt();/* Minor Memory leak -> At this point only struct filter_t, the bam_header and proc_chrom are allocated. */
 #ifdef _Win32
   R_ProcessEvents();
 #endif

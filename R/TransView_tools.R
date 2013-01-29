@@ -229,15 +229,15 @@ annotatePeaks<-function(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T,
 			nunrefs<-unlist(lapply(nurefs,rownames))
 			
 			nunrefs<-unlist(nunrefs)
-			gtf<-gtf[which(gtf$transcript_id %in% nunrefs),]
+			mgtf<-gtf[which(gtf$transcript_id %in% nunrefs),]
 			
-			sob<-sliceNT(unifyBy,as.character(nunrefs),gtf,concatenate=T,stranded=T)
+			sob<-sliceNT(unifyBy,as.character(nunrefs),mgtf,concatenate=T,stranded=T)
 			
 			if(is.character(unify_fun) && unify_fun=="mean"){resl<-lapply(sob,function(x){mean(x)})
 			}else if(is.character(unify_fun) && unify_fun=="median"){resl<-lapply(sob,function(x){median(x)})
 			}else{resl<-lapply(sob,function(x){unify_fun(x)})}
 			
-			closest_ref[nupeaks]<-lapply(nupeaks,function(x){mv<-nurefs[[x]];names(which.max(resl[mv]))})
+			closest_ref[nupeaks]<-lapply(nupeaks,function(x){mv<-nurefs[[x]];uid<-names(which.max(resl[rownames(mv)]));mv[uid,,drop=F]})
 		}
 		
 	}

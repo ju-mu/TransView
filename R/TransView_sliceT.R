@@ -20,7 +20,7 @@
 	env1<-env(dc)
 	oritnames<-tnames
 	tnames<-unique(tnames)
-	skip_chr<-c()
+
 	if(class(gtf)[1] == "GRanges"){
 		if(!("transcript_id" %in% colnames(values(gtf))))stop("Column 'transcript_id' missing in gtf metadata")
 		transc<-gtf[which(values(gtf)$transcript_id %in% tnames)]
@@ -50,8 +50,11 @@
 	seqes<-vector("list", length(transc[,1]))
 	names(seqes)<-orinames
 	chroms<-unique(transc[,1])
+	dc_chroms<-chromosomes(dc)
+	nom_chroms<-setdiff(chroms,dc_chroms)
+	is_chroms<-intersect(chroms,dc_chroms)
 	if(min(transc$end-transc$start)<1)stop("Exons with length < 1 detected")
-	for(chrom in chroms){
+	for(chrom in is_chroms){
 		chrl<-paste(chrom,"_lind",sep="");chrg<-paste(chrom,"_gind",sep="");
 		uslices<-transc[which(transc[,1] == chrom),c(2,3)]
 		uslices<-uslices[order(uslices[,1]),]
@@ -59,9 +62,7 @@
 		dp<-data_pointer(dc)
 		tlist<-.Call("slice_dc",env1[[dp]][[chrg]],env1[[dp]][[chrl]],env1[[dp]][[chrom]],uslices[,1],uslices[,2],PACKAGE = "TransView")
 		names(tlist)<-slicenames
-		if(all(is.na(tlist))){
-			skip_chr<-c(skip_chr,chrom)
-		} else if(!is.logical(control)){#check input
+		if(!is.logical(control)){#check input
 			if(class(control)[1]!="DensityContainer")stop("Input must be of class 'DensityContainer'")
 			dp2<-data_pointer(control)
 			input_dense<-.Call("slice_dc",env2[[dp2]][[chrg]],env2[[dp2]][[chrl]],env2[[dp2]][[chrom]],uslices[,1],uslices[,2],PACKAGE = "TransView")
@@ -85,13 +86,14 @@
 	seqes<-seqes[orinames]
 	if(stranded){
 		seqes[negnames]<-lapply(seqes[negnames],rev)
-		unegnames<-negnames[which(negnames %in%  unique(transc$transcript_id))]
+		#unegnames<-unique(sapply(strsplit(negnames,"\\."),"[",1))
+		unegnames<-unique(transc[which(rownames(transc) %in% negnames),"transcript_id"])
 		sortind<-1:length(orinames)
 		invisible(lapply(unegnames,function(x){y<-which(transc$transcript_id==x);sortind[y]<<-sortind[rev(y)]}))
 		seqes<-seqes[sortind]
 	}
 	gc()
-	if(length(skip_chr)>0)warning(sprintf("The following chromosomes were not found in the DensityContainer:\n%s",paste(skip_chr,collapse="|")))
+	if(length(nom_chroms)>0)warning(sprintf("The following %d chromosome(s) were not found within the DensityContainer:\n %s",length(nom_chroms),paste(nom_chroms,collapse="|")))
 	if(concatenate){
 		b<-vector("list", length(unique(transc[,5])))
 		names(b)<-unique(transc[,5])
@@ -161,6 +163,7 @@ setMethod("sliceNT", signature(dc="DensityContainer",tnames="character"), .slice
 	ends<-transc[,"end"]
 	
 	tlist<-.Call("slice_dc",env[[data_pointer(dc)]][[chrg]],env[[data_pointer(dc)]][[chrl]],env[[data_pointer(dc)]][[chrom]],starts,ends,PACKAGE = "TransView")
+	
 	if(all(is.na(tlist))){
 		warning(sprintf("%s was not found in the DensityContainer:\n%s",chrom))
 	}else if(!is.logical(control)){#check input

@@ -21,7 +21,6 @@
 	}
 	if(class(ranges)[1] == "data.frame" & length(names(ranges))<3)stop("The ranges must have at least 3 columns with the structure: Chromosome-Start-End-...")
 	orinames<-rownames(ranges)
-	skip_chr<-c()
 	nrns<-paste("P",1:length(orinames),sep="")
 	rownames(ranges)<-nrns
 	if(!(class(ranges[,2])[1] %in% c("numeric","integer")) || !(class(ranges[,3])[1] %in% c("numeric","integer"))){
@@ -33,19 +32,21 @@
 	seqes<-vector("list", length(ranges[,1]))
 	names(seqes)<-rownames(ranges)
 	chroms<-unique(ranges[,1])
+	dc_chroms<-chromosomes(dc)
+	nom_chroms<-setdiff(chroms,dc_chroms)
+	is_chroms<-intersect(chroms,dc_chroms)
 	if(!is.logical(control)){
 		if(class(control)[1]!="DensityContainer")stop("Input must be of class 'DensityContainer'")
 	}
 	
-	for(chrom in chroms){
+	for(chrom in is_chroms){
 		chrl<-paste(chrom,"_lind",sep="");chrg<-paste(chrom,"_gind",sep="");
 		uslices<-ranges[which(ranges[,1] == chrom),c(2,3)]
 		slicenames<-rownames(uslices)
 		dp<-data_pointer(dc)
 		tlist<-.Call("slice_dc",env1[[dp]][[chrg]],env1[[dp]][[chrl]],env1[[dp]][[chrom]],uslices[,1],uslices[,2],PACKAGE = "TransView")
-		if(all(is.na(tlist))){
-			skip_chr<-c(skip_chr,chrom)
-		}else if(!is.logical(control)){#check input
+		
+		if(!is.logical(control)){#check input
 			#starts<-ranges[which(ranges[,1] == chrom),2]#re set as starts might have changed in slice_dc
 			dp2<-data_pointer(control)
 			input_dense<-.Call("slice_dc",env2[[dp2]][[chrg]],env2[[dp2]][[chrl]],env2[[dp2]][[chrom]],uslices[,1],uslices[,2],PACKAGE = "TransView")
@@ -65,7 +66,7 @@
 		}
 		seqes[slicenames]<-tlist
 	}
-	if(length(skip_chr)>0)warning(sprintf("The following chromosomes were not found in the DensityContainer:\n%s",paste(skip_chr,collapse="|")))
+	if(length(nom_chroms)>0)warning(sprintf("The following %d chromosome(s) were not found within the DensityContainer:\n %s",length(nom_chroms),paste(nom_chroms,collapse="|")))
 	if(!is.logical(control) && treads_norm)message(sprintf("Normalization factor: %.2f",norm_fact))
 	seqes<-seqes[nrns]
 	names(seqes)<-orinames
@@ -118,10 +119,12 @@ setMethod("sliceN", signature(dc="DensityContainer"), .sliceN)
 		if(class(control)[1]!="DensityContainer")stop("Input must be of class 'DensityContainer'")
 		subname<-data_pointer(control)
 		input_dense<-.Call("slice_dc",env[[subname]][[chrg]],env[[subname]][[chrl]],env[[subname]][[chrom]],start,end,PACKAGE = "TransView")[[1]]
-		if(is.na(input_dense)){
+		
+		if(all(is.na(input_dense))){
 			warning(sprintf("%s was not found in the DensityContainer:\n%s",chrom))
 			return(input_dense)
 		}
+		
 		if(treads_norm){
 			norm_fact<-fmapmass(dc)/fmapmass(dc)#read normalization factor
 			input_dense<-input_dense*norm_fact

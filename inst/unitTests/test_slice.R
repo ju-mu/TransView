@@ -21,8 +21,9 @@ test_sliceN <- function(){
 	checkIdentical(as.numeric(resl[["interval_1"]]), c(3, 3, 3, 3, 2, 3, 3, 3, 1, 2, 2))
 	checkIdentical(as.numeric(resl[["interval_2"]]), c(1, 1, 1, 0, 0, 1, 2, 2, 2, 2, 1))
 	checkIdentical(as.numeric(resl[["interval_3"]]), rep(0,11))
-	checkTrue(is.na(resl[["interval_4"]]))
+	checkTrue(is.null(resl[["interval_4"]]))
 }
+
 
 test_sliceN_filter <- function(){
 	#set a filter and check the same regions	
@@ -34,6 +35,6 @@ test_sliceN_filter <- function(){
 	checkIdentical(as.numeric(resl[["interval_1"]]), c(3, 3, 3, 3, 2, 3, 3, 3, 1, 2, 2))
 	checkIdentical(as.numeric(resl[["interval_2"]]), c(1, 1, 1, 0, 0, 1, 2, 2, 2, 2, 1))
 	checkIdentical(as.numeric(resl[["interval_3"]]), rep(0,11))
-	checkTrue(is.na(resl[["interval_4"]]))
+	checkTrue(is.null(resl[["interval_4"]]))
 }
 
