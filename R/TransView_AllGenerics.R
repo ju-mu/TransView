@@ -28,6 +28,13 @@ setGeneric("data_pointer", function(dc) standardGeneric("data_pointer"))
 setGeneric("env", function(dc) standardGeneric("env"))
 setGeneric("size", function(dc) standardGeneric("size"))
 
+setGeneric("parameters", function(tvr) standardGeneric("parameters"))
+setGeneric("clusters", function(tvr) standardGeneric("clusters"))
+setGeneric("cluster_order", function(tvr) standardGeneric("cluster_order"))
+setGeneric("scores_peaks", function(tvr) standardGeneric("scores_peaks"))
+setGeneric("scores_rna", function(tvr) standardGeneric("scores_rna"))
+setGeneric("summaryTV", function(tvr) standardGeneric("summaryTV"))
+
 #Setters
 setGeneric("spliced<-", function(dc, value) standardGeneric("spliced<-"))
 setGeneric("ex_name<-", function(dc, value) standardGeneric("ex_name<-"))
@@ -42,9 +49,13 @@ setGeneric("slice1T",function(dc,tname,gtf,control=FALSE,input_method="-",concat
 setGeneric("sliceNT",function(dc,tnames,gtf,toRle=FALSE,control=FALSE,input_method="-",concatenate=T,stranded=T, treads_norm=T) standardGeneric("sliceNT"))
 
 
-#Populate dc after parseReads 
+#Populate DensityContainer after parseReads 
 setGeneric(".setTV",function(dc,filename,seqs,stats,pileup_hist,call_args,spliced,ex_name,data_pointer,filt_status,env) standardGeneric(".setTV"))
 
+#Populate TVResults after plotTV
+setGeneric(".setTVResults",function(tvr,parameters,ptv_order,scores_peaks,scores_rna) standardGeneric(".setTVResults"))
 
+#Return dTVResults with results of each cluster
+setGeneric("plotTVData",function(tvr) standardGeneric("plotTVData"))
 
 

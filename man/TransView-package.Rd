@@ -14,13 +14,13 @@ This package provides efficient tools to generate, access and display
 \tabular{ll}{
 Package: \tab TransView\cr
 Type: \tab Package\cr
-Version: \tab 1.1.4\cr
+Version: \tab 1.2.0\cr
 URL: \tab http://bioconductor.org/packages/release/bioc/html/TransView.html\cr
 License: \tab GPL-3\cr
 LazyLoad: \tab yes\cr
 Depends: \tab methods,GenomicRanges\cr
 Imports: \tab Rsamtools,zlibbioc,gplots,IRanges\cr
-Suggests: \tab RUnit\cr
+Suggests: \tab RUnit,ggplot2\cr
 biocViews: \tab 
 Bioinformatics,DNAMethylation,GeneExpression,Transcription,Microarray,
 Sequencing,HighThroughputSequencing,ChIPseq,RNAseq,Methylseq,DataImport,

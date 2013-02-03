@@ -11,7 +11,8 @@ Plotting facility for \code{DensityContainer}.
 plotTV( ..., regions, gtf=NA, scale="global", cluster="none", control = F, interpolate = 1, 
 		show_names=T, label_size=1, zero_alpha=0.5, colr=c("white","blue", "red"), colr_df="redgreen",
 		colour_spread=c(0.05,0.05), key_limit="auto", key_limit_rna="auto", set_zero="center", rowv=NA,
-		ex_windows=5, gclust="peaks", norm_readc=T, no_key=F, stranded_peak=T, ck_size=c(2,1), remove_lowex=0, verbose=1 )
+		ex_windows=5, gclust="peaks", norm_readc=T, no_key=F, stranded_peak=T, ck_size=c(2,1), remove_lowex=0,
+		 verbose=1, showPlot=T, name_width=2)
 }
 
 \arguments{
@@ -64,7 +65,7 @@ If left at the default, the upper and lower saturation levels the transcript pro
 if set to an integer, it determines the zero point of the x axis below the plot. E.g. a value of 250 will scale the x-axis of a 500bp peak from -250 to +250.
 }
   \item{rowv}{
-If a numeric vector is provided, no clustering will be performed and all rows will be ordered based on the values of this vector.
+If a numeric vector is provided, no clustering will be performed and all rows will be ordered based on the values of this vector. Alternatively a TVResults object can be provided to reproduce previous k-means clustering. 
 }
   \item{ex_windows}{
 An integer that determines the amount of points at which the read densities of an expression experiment will get interpolated by the \code{approx} function.
@@ -90,6 +91,12 @@ If \code{TRUE} and strand informations are provided in \code{peaks}, peak profil
   \item{verbose}{
 Verbosity level
 }  
+  \item{showPlot}{
+If \code{FALSE}, plotting will be suppressed and only the \linkS4class{TVResults} will be returned. 
+}  
+  \item{name_width}{
+Determines the width of the space for the peak and gene names.
+}  
 }
 \details{
 
@@ -104,7 +111,7 @@ There are 2 different kind of plots, that can be combined or plotted individuall
 }
 
 \value{
-Returns nothing by default. If kmeans clustering is performed, the reordered peaks data.frame will be returned invisibly with an additional column of the clusters. If hierarchical clustering will be performed, the reordered peaks data.frame will be returned.
+Returns a \linkS4class{TVResults} class object with the results of the clustering.
 }
 \author{Julius Muller \email{ju-mu@alumni.ethz.ch}}
 \examples{
@@ -117,7 +124,8 @@ exden.chip<-parseReads(exbam[2],verbose=0)
 
 peaks<-macs2gr(exls,psize=500)
 
-\dontrun{cluster_res<-plotTV(exden.chip,exden.ctrl,regions=peaks,cluster=5,norm_readc=F)}
+cluster_res<-plotTV(exden.chip,exden.ctrl,regions=peaks,cluster=5,norm_readc=FALSE,showPlot=FALSE)
+summary(cluster_res)
 
 }
 

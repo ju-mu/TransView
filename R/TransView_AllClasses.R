@@ -56,6 +56,7 @@ setClass("TotalReads",
 #' @slot strands Which strands were parsed at all. Can be "+", "-" or "both"
 #' @slot total_reads TotalReads class with information about the all reads in the source file
 #' @slot filtered_reads FilteredReads class storing information about reads used for read density construction
+#' @author Julius Muller
 #' @export
 setClass("TransView",
 		representation(
@@ -78,6 +79,7 @@ setClass("TransView",
 #' @slot histogram A histogram of read pileups generated across all read density maps after filtering excluding gaps. 
 #' @slot size size of the object in bytes 
 #' @slot env The environment which will keep the data_pointer target 
+#' @author Julius Muller
 #' @export
 setClass("DensityContainer",
 		contains="TransView",
@@ -89,7 +91,23 @@ setClass("DensityContainer",
 	)
 )
 
-
+#' Container with the results of a plotTV call. Includes all visual results including clusters and scores
+#' @slot parameters Holds all parameters used to call plotTV
+#' @slot clusters Clustering results
+#' @slot cluster_order Ordering of the rows with regard to the clusters
+#' @slot scores_peaks Scores of the peaks. Corresponds to the values within the plot after interpolation and normalization.
+#' @slot scores_rna Scores of the transcripts. Corresponds to the values within the plot after interpolation and normalization.
+#' @slot scores_matrix Scores of the matrix. Corresponds to the values within the plot after interpolation and normalization.
+#' @author Julius Muller
+#' @export
+setClass("TVResults",
+		representation(
+				parameters="list",
+				ptv_order="data.frame",
+				scores_peaks="list",
+				scores_rna="list"
+		)
+)
 
 #Initialize / not necessary!
 setMethod("initialize","DensityContainer",

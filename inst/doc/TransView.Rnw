@@ -339,7 +339,7 @@ fake.array<-matrix(rnorm(n=ngenes*8,mean=10,sd=2),nrow=ngenes,ncol=8,dimnames=li
 @
 
 <<label=pTV4,fig=TRUE, echo=FALSE,width=5, height=5,include=FALSE,prefix.string=plotTV,resolution=150,pdf=F,png=T>>=
-cluster_results<-plotTV(fake.array,regions=peaks.anno,gtf=gtf.mm9,show_names=T,gclust="expression",cluster="hc_sp",label_size=0.7,verbose=0)
+cluster_results<-plotTV(fake.array,regions=peaks.anno,show_names=T,gclust="expression",cluster="hc_sp",label_size=0.7,verbose=0)
 @
 
 \begin{figure}[!htb]
@@ -371,7 +371,7 @@ fake.array<-matrix(rnorm(n=ngenes*8,mean=10,sd=2),nrow=ngenes,ncol=8,dimnames=li
 @
 
 <<label=pTV4_c,echo=TRUE,eval=FALSE>>=
-cluster_results2<-plotTV(fake.array,regions=peaks.anno,gtf=gtf.mm9,show_names=T,gclust="expression",cluster="hc_sp",label_size=0.7,verbose=0)
+cluster_results2<-plotTV(fake.array,regions=peaks.anno,show_names=T,gclust="expression",cluster="hc_sp",label_size=0.7,verbose=0)
 @
 
 \subsection{Combining peak profile plots and expression}
@@ -385,7 +385,8 @@ For comprehensive visualization of the transcriptional events including transcri
 \includegraphics[keepaspectratio=true]{example_induced_top1k.png}
 \end{center}
 \caption{Mixed profile plot with 5 panels. 1000 ChIP-Seq peaks of basal (1) transcription factor levels and induced (2) levels are shown in the first two panels.  The corresponding RNA-Seq time course is shown on the right side (3 to 5). k-means clustering was applied to partition the RNA-Seq data into 6 clusters. Cluster 1 (red) clearly contains genes with a strong gain in expression levels over time.}
-\end{figure}\ref{fig:4}
+\label{fig:4}
+\end{figure}
 
 
 Row based clustering can be performed in groups. \Rfunarg{gclust} can be set to ``expression'' or ``peaks'' to restrict the clustering to transcript profile plots or peak profile plots respectively. The group not being clustered will be reordered based on the respective clustering results. \Rfunarg{gclust} can also be set to ``both'' to achieve plot wide clustering. The two options available here for the clustering algorithm are hierarchical clustering and k-means clustering. If hierarchical clustering is chosen, a dendrogram will be displayed on the left of the figure. Since hierarchical clustering in \TransView is performed on the distances within the correlation matrix, a correlation method can be chosen to account for different data distributions. To avoid rows with a standard deviation of zero, the argument \Rfunarg{remove\_lowex} can be used to set a threshold to exclude transcripts that are not expressed which is observed frequently in RNA-Seq data sets with low coverage. If k-means clustering is chosen on the other hand, a colored bar will be displayed on the left side of the figure. Alternatively a vector can be provided with ranks for user defined resorting of the rows. 
@@ -395,21 +396,45 @@ Row based clustering can be performed in groups. \Rfunarg{gclust} can be set to 
 
 \subsection{Return value and clustering}
 
-As a return value the original \Rclass{GRanges} object with the regions that were used for plotting will be returned. The rows are ordered in the same way as plotted in the figure. If k-means clustering was chosen, a column with the cluster number will be added together with a row containing the order information of the original input.
+As a return value an object of class \Rclass{TVResults} will be returned. This
+object contains the most important parameters and results of a call to \Rfunction{plotTV}.  
 
 <<tplots_1_c,echo=TRUE,eval=TRUE>>=
-cluster_results[1,]
+cluster_results
 @
 
+To track the clustering performed by plotTV, the order of the peaks and the
+corresponding clusters of each row can be easily accessed.
+
 <<tplots_1_d,echo=TRUE,eval=FALSE,keep.source=TRUE>>=
-#Order k-means results as plotted in the figure
-cluster_results[cluster_results$Order,]
-#Re-plot with the same clusters by providing the clusters to the argument rowv
+cluster_order(cluster_results)[1:10]
+clusters(cluster_results)[1:10]
+summaryTV(cluster_results2)
 @
+
+The order of the individual clusters can also be passed to plotTV in order to
+reproduce a plot clustered with k-means clustering.
+
 <<tplots_1_e,echo=TRUE,eval=FALSE>>=
-#To reproduce a plot clustered with k-means clustering, the column Cluster of the return value of a call to plotTV can be passed to rowv
-plotTV(dens.pas_paired,dens.pas_upaired,regions=genes2plot,gtf=gtf.dm3,show_names=T,rowv=cluster_results$Cluster,verbose=0,ex_windows=300)
+plotTV(dens.pas_paired,dens.pas_upaired,regions=genes2plot,gtf=gtf.dm3,show_names=T,rowv=cluster_results,verbose=0,ex_windows=300)
 @
+
+Apart from the basic order of the peaks and genes after clustering and the
+corresponding clusters, a data frame with the summarized scores can be
+extracted.
+
+<<tplots_1_f,echo=TRUE,eval=TRUE>>=
+cluster_df<-plotTVData(cluster_results)
+@
+
+The data frame contains the averaged scores of each data set passed to
+\Rfunction{plotTV}. The corresponding summaries can be visualized with e.g.
+\Rpackage{ggplot2}:
+
+<<tplots_1_g,eval=FALSE>>=
+ggplot(cluster_df,aes(x=Position,y=Average_scores,color=Sample))+geom_point()+facet_wrap(Cluster~Plot,scales="free")
+@
+
 
 \newpage
 \section{Memory usage and speed considerations}

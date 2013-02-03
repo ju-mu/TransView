@@ -73,3 +73,27 @@ setReplaceMethod("spliced", "DensityContainer",
 ) 
 
 
+
+
+setTVResults<-function(tvr,parameters,ptv_order,scores_peaks,scores_rna){
+	tvr@parameters<-parameters
+	tvr@ptv_order<-ptv_order
+	tvr@scores_peaks<-scores_peaks
+	tvr@scores_rna<-scores_rna
+	
+	return(tvr)
+}
+
+#' Fill the DensityContainer class
+#' @param parameters Holds all parameters used to call plotTV
+#' @param ptv_order data.frame with the clustering results and the ordering
+#' @param scores_peaks Scores of the peaks. Corresponds to the values within the plot after interpolation and normalization.
+#' @param scores_rna Scores of the transcripts. Corresponds to the values within the plot after interpolation and normalization.
+#' @returnType DensityContainer
+#' @return dc
+#' @author Julius Muller
+#' @export
+setMethod(".setTVResults", signature(tvr="TVResults",parameters="list",ptv_order="data.frame",scores_peaks="list",scores_rna="list"),setTVResults)
+
+
+

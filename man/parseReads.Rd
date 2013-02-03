@@ -69,7 +69,7 @@ format read pile ups greater than \bold{2^16} will be capped and a warning will 
 
 If memory space is limiting, a filter can be supplied which will limit the density track to these regions. 
 Filtered \code{DensityContainer} should only be sliced with the \bold{same} regions used for parsing, since 
-all other postions are set to 0 and can produce artificially low read counts.
+all other positions are set to 0 and can produce artificially low read counts.
 
 }
 

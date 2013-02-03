@@ -32,7 +32,8 @@
 plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control = F, interpolate = 1, 
 		show_names=T, label_size=1, zero_alpha=0.5, colr=c("white","blue", "red"), colr_df="redgreen",
 		colour_spread=c(0.05,0.05), key_limit="auto", key_limit_rna="auto", set_zero="center", rowv=NA,
-		ex_windows=5, gclust="peaks", norm_readc=T, no_key=F, stranded_peak=T, ck_size=c(2,1), remove_lowex=0, verbose=1 ) 
+		ex_windows=5, gclust="peaks", norm_readc=T, no_key=F, stranded_peak=T, ck_size=c(2,1), remove_lowex=0, 
+		verbose=1, showPlot=T ,name_width=2) 
 {
 	stopifnot(is.numeric(set_zero) || set_zero=="center")
 	argList<-list(...)
@@ -40,14 +41,17 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 	
 	ttlRNA<-c();ttl<-c()
 	
+	if(class(gtf)[1]!="GRanges"){
+		if(class(gtf)[1]!="logical" || !is.na(gtf))stop("gtf must be of class 'GRanges'")
+	}
 	if(class(regions)[1]!="GRanges"){
 		if(class(regions)[1]=="character"){
 			trefs<-length(unique(regions))
 			regions<-as.data.frame(gtf[which(values(gtf)$transcript_id %in% regions),])
 			tpeaks<-length(unique(regions$transcript_id))
-			if(tpeaks!=tpeaks){
+			if(tpeaks!=trefs){
 				if(tpeaks==0){stop("No identifier in column 'transcript_id' of the gtf is matching the regions!")
-				}else{warning(paste(tpeaks-length(unique(regions$transcript_id )),"transcript_id's not found in GTF"))}
+				}else{warning(paste(trefs-tpeaks,"transcript_id's not found in GTF"))}
 			}
 			rg<-split(regions,f=regions$transcript_id)
 			rg<-lapply(rg,function(x){c(as.character(x$seqnames)[1],min(x$start),max(x$end),sum(x$width),as.character(x$strand)[1],as.character(x$transcript_id)[1])})
@@ -55,33 +59,35 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 			colnames(regions)<-c("seqnames","start","end","width","strand","transcript_id")
 		}else if(class(regions)[1]!="logical" || !is.na(regions))stop("regions must be of class 'GRanges' or 'character'")
 	}else{
-		regions<-as.data.frame(regions)
+		regions<-as.data.frame(regions,stringsAsFactors=F)
 		regions$seqnames<-as.character(regions$seqnames)
 		regions$strand<-as.character(regions$strand)
 		tpeaks<-nrow(regions)
+		if(!"transcript_id" %in% colnames(regions))regions$transcript_id<-NA
 	}
-	if(class(gtf)[1]!="GRanges"){
-		if(class(gtf)[1]!="logical" || !is.na(gtf))stop("gtf must be of class 'GRanges'")
-	}
-	
+
+	ptv_order<-data.frame("Original"=1:nrow(regions),"Peak"=rownames(regions),"Transcript"=regions$transcript_id,"Cluster"=rep(1,nrow(regions)),"NewPosition"=1:nrow(regions),stringsAsFactors=F)
 	
 	if(tpeaks<2)stop("At least 2 rows have to be present in regions")
 	
-	if(is.numeric(rowv)){
-		if(cluster!="none"){rowv<-NA
+	if((cluster!="none" & cluster<2) | length(cluster)>1)stop("cluster must be a numeric > 1") 
+	if(is.numeric(rowv) || class(rowv)[[1]]=="TVResults"){
+		if(cluster!="none"){stop("rowv cannot be used if cluster is set")
 		}else cluster<-1
-	}else if(!is.na(rowv))stop("rowv has to be a numeric vector")
+	}else if(class(rowv)[[1]]!="TVResults"){if(!all(is.na(rowv)))stop("rowv has to be a numeric vector or of class TVResults")}
 	if(!is.character(key_limit) & (!is.numeric(key_limit) | length(key_limit)!=2))stop("key_limit must be a numeric vector of length 2")
 	if(!is.character(key_limit_rna) & (!is.numeric(key_limit_rna) | length(key_limit_rna)!=2))stop("key_limit_rna must be a numeric vector of length 2")
 	if(!(gclust %in% c("expression","peaks","both")))stop("Argument gclust must be either 'expression','peaks' or 'both'")
 	if(!(scale %in% c("global","individual")))stop("Argument scale must be either 'global' or 'individual'")
-	tcvg<-c();rcvg<-c();hmap<-NA
+	tcvg<-c();rcvg<-c();hmapc<-0
 	for (arg in argList) {
 		
 		if (!.is.dc(arg)){
-			if (length( dim(arg)) == 2 && is.numeric(arg)){
-				if(!is.na(hmap))stop("Only one matrix allowed!")
+			if (length( dim(arg)) == 2 && is.matrix(arg)){
+				if(hmapc)stop("Only one matrix allowed!")
 				hmap<-arg
+				hmapc<-1
+				ttlRNA<-c(ttlRNA,"Matrix")
 				if(nrow(hmap)!=tpeaks)stop("A matrix has to have the same amount of rows like regions")
 				next
 			}else stop("Data sets must be of any number of class 'DensityContainer' and maximally one matrix")
@@ -98,8 +104,7 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 			ttl<-c(ttl,ex_name(arg))
 		}
 	}
-	
-	hmapc<-ifelse(length( dim(hmap)) == 2 && is.numeric(hmap),1,0)
+
 	if (hmapc && length(rcvg)>0)stop("Expression data can be passed as one matrix or one or many DensityContainer but not both!")
 	
 	if(!is.logical(control) && length(control)!=(length(argList)-hmapc))stop("If control is provided, it must match the amount of experiments.")
@@ -109,7 +114,9 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 	argc <- 0; argcRNA <- 0
 	plotmat<-list();scalevec<-list();key_limits<-list()
 	plotmatRNA<-list()
-	if(hmapc)plotmatRNA<-hmap
+	if(hmapc){
+		plotmatRNA<-hmap
+	}
 	scalevecRNA<-list();key_limitsRNA<-list()
 	
 	if(verbose>0)message("Fetching densities...")
@@ -124,7 +131,7 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 				argcRNA <- argcRNA+1
 				
 				dsts <- sliceNT(arg, gtf=gtf, tnames=regions$transcript_id, control = ctrl,treads_norm = norm_readc)
-				if(remove_lowex)glens<-unlist(lapply(dsts,length))
+				ptv_order$Transcipt_length<-unlist(lapply(dsts,length))
 				
 				dsts<-.gene2window(dsts,ex_windows,window_fun="approx")
 				
@@ -151,17 +158,20 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 			}
 		}
 	}
-	if(argcRNA>0 && (cluster!="none"||remove_lowex))rnaj<-do.call("cbind",plotmatRNA)
-	
 	### ###
+	
+	if(argcRNA)ptv_order$Mean_dens_ex<-rowMeans(do.call("cbind",plotmatRNA))#apply(do.call("cbind",plotmatRNA),1,median)
 	
 	#### Remove not expressed ####
 	if(remove_lowex>0 && argcRNA>0){
-		lowex<-which((rowSums(rnaj)/glens)<remove_lowex)
+		
+		lowex<-which(ptv_order$Mean_dens_ex<remove_lowex)
 		if(length(lowex)>0){
 			regions<-regions[-lowex,]
+			ptv_order<-ptv_order[-lowex,]
+			ptv_order$Original<-1:nrow(ptv_order)
+			ptv_order$NewPosition<-1:nrow(ptv_order)
 			message(sprintf("%d genes did not pass the expression threshold",length(lowex)))
-			rnaj<-rnaj[-lowex,]
 			for(x in 1:argcRNA)plotmatRNA[[x]] <- plotmatRNA[[x]][-lowex,]
 			if(argc>0){
 				for(x in 1:argc){
@@ -194,19 +204,20 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 		
 		cob<-.row_z_score(cob)#do kmeans clustering only on z scores
 		if(is.numeric(cluster)){
-			#do kmeans clustering only on z scores
-			kclust<-kmeans(.row_z_score(cob),cluster)$cluster
+			ptv_order$Cluster<-kmeans(cob,cluster)$cluster
+			ptv_order$NewPosition<-order(ptv_order$Cluster)
 		}else if(substr(cluster,1,3)=="hc_"){
 			if(substr(cluster,4,5)=="sp"){dend<-as.dendrogram(hclust(as.dist(1-cor(t(cob), method="spearman"))))
 			}else if(substr(cluster,4,5)=="pe"){dend<-as.dendrogram(hclust(as.dist(1-cor(t(cob), method="pearson"))))
 			}else if(substr(cluster,4,5)=="rm"){dend<-as.dendrogram(hclust(dist(rowMeans(cob))))
 			}else stop("Clustering not implemented:",cluster) 
+			ptv_order$NewPosition<-order.dendrogram(dend)
 		}else stop("Clustering not implemented:",cluster) 
 	}
 	
 	### ###
 	
-	if(verbose>0)message("Plotting...")
+	if(verbose>0 && showPlot)message("Plotting...")
 	
 	#### Re scale expression ####
 	
@@ -233,9 +244,10 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 	
 	#### LAYOUT ####
 	
-	op <- par(no.readonly = TRUE)
-	on.exit(par(op))
-	
+	if(showPlot){
+		op <- par(no.readonly = TRUE)
+		on.exit(par(op))
+	}
 	lhei <- c(ck_size[1], 8)
 	
 	lwid<-rep(10,argc+argcRNA+hmapc)
@@ -243,18 +255,18 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 	uorder<-1:(argc+argcRNA+hmapc);lorder<-(argc+argcRNA+hmapc+1):lmax
 	if(show_names){
 		if(argc>0){
-			lwid<-c(1,lwid)#reserve some space for peak names in first column
+			lwid<-c(name_width,lwid)#reserve some space for peak names in first column
 			uorder<-c(0,uorder)#dont plot upper panel
 			lmax<-lmax+1
 			lorder<-(argc+argcRNA+1):lmax
 		}
 		if(argcRNA>0){
-			lwid<-c(lwid,1)#reserve some space for gene names in last column
+			lwid<-c(lwid,name_width)#reserve some space for gene names in last column
 			uorder<-c(uorder,0)#dont plot upper panel
 			lmax<-lmax+1
 			lorder<-(argc+argcRNA+1):lmax
 		} else if(hmapc){
-			lwid<-c(lwid,1)#reserve some space for gene names in last column
+			lwid<-c(lwid,name_width)#reserve some space for gene names in last column
 			uorder<-c(uorder,0)#dont plot upper panel
 			lmax<-lmax+1
 			lorder<-(argc+hmapc+1):lmax
@@ -271,7 +283,7 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 			lwid<-c(1,lwid)
 			if(argc>1 && show_names){
 				lorder[1:2]<-rev(lorder[1:2])
-				lwid[1]<-1
+				lwid[1:2]<-rev(lwid[1:2])
 			}
 		}
 	}  
@@ -289,7 +301,7 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 		lmat<-rbind(lorder,below)
 	}
 	
-	layout(lmat, widths = lwid, heights = lhei)
+	if(showPlot)layout(lmat, widths = lwid, heights = lhei)
 	
 	
 #layout.show(nf) 
@@ -314,7 +326,7 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 	
 	shrink<-function(x,ext){x[x < ext[1]] <- ext[1];x[x > ext[2]] <- ext[2];x}
 	rowMax<-function(x){apply(x,1,max)}
-	if(!no_key)par(mar = c(1.5, 3/ck_size[2], 1.5,3/ck_size[2]), cex = 0.45)#c(bottom, left, top, right)
+	if(!no_key & showPlot)par(mar = c(1.5, 3/ck_size[2], 1.5,3/ck_size[2]), cex = 0.45)#c(bottom, left, top, right)
 	col<-list();breaks<-list()
 	
 	for (argn in 1:argc) {
@@ -326,7 +338,7 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 		
 		plotmat[[argn]]<-shrink(plotmat[[argn]],key_limits[[argn]])
 		col[[argn]] <- colorpanel(key_limits[[argn]][2]-key_limits[[argn]][1], colr[1],colr[2],colr[3])
-		if(!no_key){
+		if(!no_key & showPlot){
 			scalevec[[argn]]<-shrink(scalevec[[argn]],key_limits[[argn]])
 			breaks <- seq(key_limits[[argn]][1], key_limits[[argn]][2], length = length(col[[argn]])+1)
 			image( matrix(breaks, ncol = 1), col = col[[argn]],breaks=breaks, xaxt = "n", yaxt = "n",ylim=c(0,1))
@@ -363,7 +375,7 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 		if(!is.character(key_limit_rna)){key_limitsRNA[[argn]]<-key_limit_rna
 		}else if(key_limitsRNA[[argn]][1]>rmax && rmax>=1 && scale!="global")key_limitsRNA[[argn]][1]<-rmax-1
 		plotmatRNA[[argn]]<-shrink(plotmatRNA[[argn]],key_limitsRNA[[argn]])
-		if(!no_key){
+		if(!no_key & showPlot){
 			scalevecRNA[[argn]]<-shrink(scalevecRNA[[argn]],key_limitsRNA[[argn]])
 			breaks <- seq(key_limitsRNA[[argn]][1], key_limitsRNA[[argn]][2], length = colres+1)
 			image( matrix(breaks, ncol = 1), col = colRNA,breaks=breaks, xaxt = "n", yaxt = "n",ylim=c(0,1))
@@ -386,7 +398,7 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 		plotmatRNA<-shrink(plotmatRNA,key_limitsRNA)
 		colres<-100
 		if(colr_df=="redgreen")colRNA=greenred(100)#looks better for microarrays?
-		if(!no_key){
+		if(!no_key & showPlot){
 			scalevecRNA<-shrink(scalevecRNA,key_limitsRNA)
 			breaks <- seq(key_limitsRNA[1], key_limitsRNA[2], length = colres+1)
 			image( matrix(breaks, ncol = 1), col = colRNA,breaks=breaks, xaxt = "n", yaxt = "n",ylim=c(0,1))
@@ -406,101 +418,114 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 	
 	### ###
 	
-	
+
 	#### PLOT CLUSTER ####
-	par(mar=c(0,0,1,0))#c(bottom, left, top, right)
+	if(showPlot)par(mar=c(0,0,1,0))#c(bottom, left, top, right)
 	if(is.numeric(rowv)){
 		if(length(rowv)!=tpeaks)stop("rowv has to have the same row number as the data")
-		kclust<-rowv
+		ptv_order$NewPosition<-order(rowv)
+		ptv_order$Cluster<-rowv
 		cluster<-length(unique(rowv))
+	}else if(class(rowv)[[1]]=="TVResults"){
+		ptv_order$NewPosition<-cluster_order(rowv)
+		ptv_order$Cluster<-clusters(rowv)
+		cluster<-length(unique(clusters(rowv)))
 	}
 	if(cluster!="none"){
 		if(is.numeric(cluster)){
-			morder<-order(kclust)
-			if(is.numeric(rowv) & "Order" %in% colnames(regions))morder<-regions$Order
-			kcout<-kclust
-			cpos<-1
-			kcol<-rainbow(cluster)
-			for(k in 1:cluster)kclust[which(kclust==k)]<-kcol[k]
-			image(rbind(seq(1,0,-1/(tpeaks-1))),col = kclust[morder], axes = F)
+			if(!"KClust_color" %in% colnames(ptv_order)){
+				kcol<-rainbow(cluster)
+				ptv_order$KClust_color<-NA
+				for(k in 1:cluster)ptv_order$KClust_color[which(ptv_order$Cluster==k)]<-kcol[k]
+			}
+			if(showPlot)image(rbind(seq(1,0,-1/(tpeaks-1))),col = ptv_order$KClust_color[ptv_order$NewPosition], axes = F)
 		}else if(substr(cluster,1,3)=="hc_"){
-			plot(dend, horiz = TRUE, axes = FALSE, yaxs = "i", leaflab = "none",edgePar = list(lwd=1))
-			morder<-order.dendrogram(dend)
+			if(showPlot)plot(dend, horiz = TRUE, axes = FALSE, yaxs = "i", leaflab = "none",edgePar = list(lwd=1))
 		}
 	}
 	### ###
 	
 	
 	#### PEAK NAMES ####
-	if(argc>0 && show_names){
+	if(argc>0 && show_names && showPlot){
 		par(mar=c(0,0,1,0))#c(bottom, left, top, right)
 		plot(x=c(0.5,0.5),y=c(0,tpeaks),type="n",axes=F,ylim=c(-0.5,tpeaks-0.5),yaxs="i")
-		text(.5,seq((tpeaks-1),0), labels =  rownames(plotmat[[argc]]), xpd = F,cex = label_size)
+		text(.5,seq((tpeaks-1),0), labels =  ptv_order$Peak[ptv_order$NewPosition], xpd = F,cex = label_size)
 	}
 	### ###
 	
 	#### PLOT MAIN FIGURE ####
-	par(mar = c(0, 1, 1, 1))#c(bottom, left, top, right)
+	if(showPlot)par(mar = c(0, 1, 1, 1))#c(bottom, left, top, right)
 	rotate = function(mat) t(mat[nrow(mat):1,,drop=FALSE])
 	for (argn in 1:argc) {
 		if(argc==0)break
-		if(cluster!="none")plotmat[[argn]]<-plotmat[[argn]][morder,]
-		image(rotate(plotmat[[argn]]), col = col[[argn]], useRaster = T, axes = F)
+		if(showPlot)image(rotate(plotmat[[argn]][ptv_order$NewPosition,]), col = col[[argn]], useRaster = T, axes = F)
 		lplot<-dim(plotmat[[argn]])[2]*interpolate
 		if(set_zero=="center")set_zero<-lplot/2
-		#set_zero<-set_zero/interpolate
-		#axis(1, at = seq(0,1,length.out=5), labels = round(seq(-set_zero,lplot-set_zero,lplot/4)), cex.axis=label_size, line = -1, tick = 0,font=2)
-		lines(c(set_zero/lplot,set_zero/lplot),c(0,1),col=rgb(0,0,0,alpha=zero_alpha),lwd=3,lty=1)
+		if(showPlot)lines(c(set_zero/lplot,set_zero/lplot),c(0,1),col=rgb(0,0,0,alpha=zero_alpha),lwd=3,lty=1)
 	}
 	for (argn in 1:argcRNA) {
 		if(argcRNA==0)break
-		if(cluster!="none")plotmatRNA[[argn]]<-plotmatRNA[[argn]][morder,]
-		image(rotate(plotmatRNA[[argn]]), col = colRNA, useRaster = T, axes = F)
+		if(showPlot)image(rotate(plotmatRNA[[argn]][ptv_order$NewPosition,]), col = colRNA, useRaster = T, axes = F)
 	}
-	if(hmapc){
-		if(cluster!="none")plotmatRNA<-plotmatRNA[morder,]
-		image(rotate(plotmatRNA), col = colRNA, useRaster = T, axes = F)
-		#axis(1, at= seq(0,1,length.out=length(colnames(hmap))), labels = colnames(hmap), cex.axis=label_size, line = -1, tick = 0,font=1)
-	}
+	if(hmapc && showPlot)image(rotate(plotmatRNA[ptv_order$NewPosition,]), col = colRNA, useRaster = T, axes = F)
 	### ###
 	
 	#### GENE NAMES ####
-	if(show_names){
+	if(show_names && showPlot){
 		if(argcRNA>0){
 			par(mar=c(0,0,1,1))#c(bottom, left, top, right)
 			plot(x=c(0.5,0.5),y=c(0,tpeaks),type="n",axes=F,ylim=c(-0.5,tpeaks-0.5),yaxs="i")
-			text(y=seq((tpeaks-1),0), .5, labels =  gsub(".y","",rownames(plotmatRNA[[argcRNA]])), xpd = F,cex = label_size)
+			text(y=seq((tpeaks-1),0), .5, labels = ptv_order$Transcript[ptv_order$NewPosition], xpd = F,cex = label_size)
 		}else if(hmapc){
 			par(mar=c(0,0,1,1))#c(bottom, left, top, right)
 			plot(x=c(0.5,0.5),y=c(0,tpeaks),type="n",axes=F,ylim=c(-0.5,tpeaks-0.5),yaxs="i")
-			text(y=seq((tpeaks-1),0), .5, labels = rownames(plotmatRNA), xpd = F,cex = label_size)
+			text(y=seq((tpeaks-1),0), .5, labels = ptv_order$Transcript[ptv_order$NewPosition], xpd = F,cex = label_size)
 		}
 	}
 	### ###
 	
 	#### PLOT AXIS LABELS ####
-	par(mar = c(0, 0, 0, 0))#c(bottom, left, top, right)
-	
-	for (argn in 1:argc) {
-		if(argc==0)break
-		plot.new()
-		text(seq(0,1,length.out=5),0.5, labels = round(seq(-set_zero,lplot-set_zero,lplot/4)), cex=label_size, font=2)
-	}
-	for (argn in 1:argcRNA) {
-		if(argcRNA==0)break
-		plot.new()
-		text(c(0,1),0.5, labels = c("5'","3'"), cex=label_size, font=2)
-	}
-	if(hmapc){
-		plot.new()
-		corec<-(1/ncol(hmap))/2.2
-		text(seq(0+corec,1-corec,length.out=ncol(hmap)),.5, labels = colnames(hmap), cex=label_size, font=2)
+	if(showPlot){
+		par(mar = c(0, 0, 0, 0))#c(bottom, left, top, right)
+		
+		for (argn in 1:argc) {
+			if(argc==0)break
+			plot.new()
+			text(seq(0,1,length.out=5),0.5, labels = round(seq(-set_zero,lplot-set_zero,lplot/4)), cex=label_size, font=2)
+		}
+		for (argn in 1:argcRNA) {
+			if(argcRNA==0)break
+			plot.new()
+			text(c(0,1),0.5, labels = c("5'","3'"), cex=label_size, font=2)
+		}
+		if(hmapc){
+			plot.new()
+			corec<-(1/ncol(plotmatRNA))/2.2
+			text(seq(0+corec,1-corec,length.out=ncol(plotmatRNA)),.5, labels = colnames(plotmatRNA), cex=label_size, font=2)
+		}
 	}
 	### ###
 	
-	if(is.numeric(cluster) & !is.numeric(rowv)){invisible(cbind(regions,"Cluster"=kcout,"Order"=morder))
-	}else if(cluster!="none" & !is.numeric(rowv)){invisible(regions[morder,])
-	} else {invisible(regions)}
+	
+	
+	#### Finally return the results ####
+	
+	params<-list("colnames_peaks"=ttl,"colnames_expression"=ttlRNA,scale=scale, cluster=cluster, control = control, interpolate = interpolate, show_names=show_names, label_size=label_size, 
+			zero_alpha=zero_alpha, colr=colr, colr_df=colr_df,colour_spread=colour_spread, key_limit=key_limit, 
+			key_limit_rna=key_limit_rna, set_zero=set_zero, rowv=rowv,ex_windows=ex_windows, gclust=gclust, norm_readc=norm_readc, no_key=no_key, 
+			stranded_peak=stranded_peak, ck_size=ck_size, remove_lowex=remove_lowex, verbose=verbose,"Matrices"=hmapc,"Expression_data"=argcRNA,"Peak_data"=argc,showPlot=showPlot)
+	
+	ptv_order$NewPosition<-order(ptv_order$NewPosition)
+	if(!is.list(plotmatRNA))plotmatRNA<-list(plotmatRNA)
+	invisible(.setTVResults(new("TVResults"),params,ptv_order,plotmat,plotmatRNA))
+	
+	### ###	
+
 }
+
+
+
+
 
 

@@ -32,6 +32,12 @@ setMethod("env", signature("DensityContainer"), function(dc) dc@env)
 setMethod("size", signature("DensityContainer"), function(dc) dc@size)
 setMethod("histogram", signature("DensityContainer"), function(dc) dc@histogram)
 
+setMethod("parameters", signature("TVResults"), function(tvr) tvr@parameters)
+setMethod("clusters", signature("TVResults"), function(tvr) tvr@ptv_order$Cluster)
+setMethod("cluster_order", signature("TVResults"), function(tvr) tvr@ptv_order$NewPosition)
+setMethod("scores_peaks", signature("TVResults"), function(tvr) tvr@scores_peaks)
+setMethod("scores_rna", signature("TVResults"), function(tvr) tvr@scores_rna)
+setMethod("summaryTV", signature("TVResults"), function(tvr) tvr@ptv_order[order(tvr@ptv_order$NewPosition),])
 
 #' 
 #' @param dc 

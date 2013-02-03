@@ -34,4 +34,17 @@ setMethod("show",
 )
 
 
-
+#' prints out tvr information
+#'
+#' @name show
+#' @docType methods
+#'
+#'
+setMethod("show", 
+		signature(object="TVResults"), 
+		definition=function(object) {
+			cat("class: TVResults\n")
+			print(format(parameters(object)))
+			cat("\n")
+		}
+)

@@ -1,4 +1,21 @@
 
+
+CHANGES IN VERSION 1.2.0
+------------------------
+
+
+NEW FEATURES
+
+    o A new class TVResults is returned by plotTV containing all important results of the clustering and plotting.
+    o TVResults objects can be accessed by their slots and plotTVData. plotTVData returns a data frame with the summarized results.
+    o Added option showPlot to plotTV() to suppress plotting optionally. This is useful if only the clustering results are needed.
+    o Added an option name_width to plotTV() to enable customized widths of the row labels.
+
+BUG FIXES
+
+    o Improved kmeans clustering
+
+
 CHANGES IN VERSION 1.1.6
 ------------------------
 
