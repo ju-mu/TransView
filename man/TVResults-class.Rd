@@ -16,7 +16,7 @@
 \alias{scores_peaks}
 \alias{scores_rna,TVResults-method}
 \alias{scores_rna}
-\alias{summary}
+\alias{summaryTV}
 \alias{summaryTV,TVResults-method}
 
 \title{Class \code{"TVResults"}}

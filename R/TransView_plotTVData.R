@@ -17,7 +17,7 @@
 	cluster<-max(unique(ptv_order$Cluster))
 	kml<-data.frame();kml2<-data.frame()
 	if(argcRNA && hmapc==0){
-		plotmatRNA<-scores_rna(tvr)
+		plotmatRNA<-lapply(scores_rna(tvr),function(x){x[ptv_order$Original,]})
 		usize<-ncol(plotmatRNA[[1]])
 		knames<-unlist(lapply(paste("Cluster",1:cluster,sep=""),rep,usize))
 		rnames<-unlist(lapply(paste("Column",1:argcRNA,sep="_"),rep,usize*cluster))
@@ -32,7 +32,7 @@
 		}
 	}
 	if(hmapc){
-		plotmatRNA<-scores_rna(tvr)[[1]]
+		plotmatRNA<-scores_rna(tvr)[[1]][ptv_order$Original,]
 		usize<-ncol(plotmatRNA)
 		knames<-unlist(lapply(paste("Cluster",1:cluster,sep=""),rep,usize))
 		rnames<-rep("Matrix",usize*cluster)
@@ -41,7 +41,7 @@
 		kml<-data.frame(Position=rep(1:usize,cluster),Cluster=knames,Sample=rnames,Average_scores=kscores,Plot=rep("Matrix",usize*cluster),stringsAsFactors=F)
 	}
 	if(argc){
-		plotmat<-scores_peaks(tvr)
+		plotmat<-lapply(scores_peaks(tvr),function(x){x[ptv_order$Original,]}) 
 		usize<-ncol(plotmat[[1]])
 		mmid<- (round(-params[["set_zero"]]):round(params[["set_zero"]]))[1:usize]
 		

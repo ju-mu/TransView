@@ -432,7 +432,7 @@ The data frame contains the averaged scores of each data set passed to
 \Rpackage{ggplot2}:
 
 <<tplots_1_g,eval=FALSE>>=
-ggplot(cluster_df,aes(x=Position,y=Average_scores,color=Sample))+geom_point()+facet_wrap(Cluster~Plot,scales="free")
+ggplot(cluster_df,aes(x=Position,y=Average_scores,color=Sample))+geom_point()+facet_wrap(Plot~Cluster,scales="free",ncol=5)
 @
 
 
