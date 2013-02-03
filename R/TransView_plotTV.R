@@ -427,9 +427,10 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 		ptv_order$Cluster<-rowv
 		cluster<-length(unique(rowv))
 	}else if(class(rowv)[[1]]=="TVResults"){
-		ptv_order$NewPosition<-cluster_order(rowv)
+		ptv_order$NewPosition<-order(clusters(rowv))
 		ptv_order$Cluster<-clusters(rowv)
-		cluster<-length(unique(clusters(rowv)))
+		ptv_order$KClust_color<-ptv_order$KClust_color[order(ptv_order$Cluster)]
+		cluster<-length(unique(ptv_order$Cluster))
 	}
 	if(cluster!="none"){
 		if(is.numeric(cluster)){
