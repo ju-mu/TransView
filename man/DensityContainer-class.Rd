@@ -84,7 +84,6 @@ dc represents a \code{"DensityContainer"} instance in the following
     \item{\code{paired(dc)}:}{Does the source file contain reads with proper pairs?  }
     \item{\code{filtered(dc)}:}{Is there a range filter in place? If \code{TRUE}, slicing should be only conducted using the same filter!! }
     \item{\code{strands(dc)}:}{Which strands were parsed at all. Can be "+", "-" or "both" }
-    \item{\code{total_reads(dc)}:}{TotalReads class with information about the all reads in the source file }
     \item{\code{filtered_reads(dc)}:}{FilteredReads class storing information about reads used for read density construction}
 	\item{\code{chromosomes(dc)}:}{Character string with the chromosomes used for map construction}
 	\item{\code{pos(dc)}:}{Reads used from the forward strand}

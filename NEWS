@@ -1,4 +1,14 @@
 
+CHANGES IN VERSION 1.2.3
+------------------------
+
+NEW FEATURES
+
+    o All slice methods can now return binned densities of predefined width.
+    o The method to bin data can be specified by a new option in plotTV and the slice methods called bin_method. The amount of bins to be returned can be specified by nbins.
+    o Default method to plot densities in plotTV is now mean instead of linear interpolation using approx. median or max are additional possibilities.
+
+
 CHANGES IN VERSION 1.2.2
 ------------------------
 

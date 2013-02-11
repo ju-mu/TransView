@@ -7,7 +7,7 @@
 #' @param scale 
 #' @param cluster 
 #' @param control 
-#' @param interpolate 
+#' @param peak_windows 
 #' @param show_names 
 #' @param label_size 
 #' @param zero_alpha 
@@ -29,11 +29,11 @@
 #' @return 
 #' @author Julius Muller
 #' @export
-plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control = F, interpolate = 1, 
-		show_names=T, label_size=1, zero_alpha=0.5, colr=c("white","blue", "red"), colr_df="redgreen",
-		colour_spread=c(0.05,0.05), key_limit="auto", key_limit_rna="auto", set_zero="center", rowv=NA,
-		ex_windows=5, gclust="peaks", norm_readc=T, no_key=F, stranded_peak=T, ck_size=c(2,1), remove_lowex=0, 
-		verbose=1, showPlot=T ,name_width=2) 
+plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control = F, peak_windows = 0, ex_windows=100,
+			bin_method="mean", show_names=T, label_size=1, zero_alpha=0.5, colr=c("white","blue", "red"), 
+			colr_df="redgreen",	colour_spread=c(0.05,0.05), key_limit="auto", key_limit_rna="auto", 
+			set_zero="center", rowv=NA,	gclust="peaks", norm_readc=T, no_key=F, stranded_peak=T, 
+			ck_size=c(2,1), remove_lowex=0, verbose=1, showPlot=T, name_width=2)
 {
 	stopifnot(is.numeric(set_zero) || set_zero=="center")
 	argList<-list(...)
@@ -65,7 +65,7 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 		tpeaks<-nrow(regions)
 		if(!"transcript_id" %in% colnames(regions))regions$transcript_id<-NA
 	}
-
+	
 	ptv_order<-data.frame("Original"=1:nrow(regions),"Peak"=rownames(regions),"Transcript"=regions$transcript_id,"Cluster"=rep(1,nrow(regions)),"NewPosition"=1:nrow(regions),stringsAsFactors=F)
 	
 	if(tpeaks<2)stop("At least 2 rows have to be present in regions")
@@ -79,7 +79,7 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 	if(!is.character(key_limit_rna) & (!is.numeric(key_limit_rna) | length(key_limit_rna)!=2))stop("key_limit_rna must be a numeric vector of length 2")
 	if(!(gclust %in% c("expression","peaks","both")))stop("Argument gclust must be either 'expression','peaks' or 'both'")
 	if(!(scale %in% c("global","individual")))stop("Argument scale must be either 'global' or 'individual'")
-	tcvg<-c();rcvg<-c();hmapc<-0
+	tcvg<-c();rcvg<-c();hmapc<-0;
 	for (arg in argList) {
 		
 		if (!.is.dc(arg)){
@@ -99,12 +99,11 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 			regions$transcript_id<-as.character(regions$transcript_id)
 			ttlRNA<-c(ttlRNA,ex_name(arg))
 		}else{
-			if(class(regions)[1]!="data.frame")stop("If non spliced DensityContainer are passed, regions must be of class 'GRanges'")
 			tcvg <- c(tcvg, ifelse(norm_readc,fmapmass(arg),1))
 			ttl<-c(ttl,ex_name(arg))
 		}
 	}
-
+	
 	if (hmapc && length(rcvg)>0)stop("Expression data can be passed as one matrix or one or many DensityContainer but not both!")
 	
 	if(!is.logical(control) && length(control)!=(length(argList)-hmapc))stop("If control is provided, it must match the amount of experiments.")
@@ -112,7 +111,7 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 	if(!is.null(tcvg))nvec <- tcvg/min(tcvg)
 	if(!is.null(rcvg))rvec <- rcvg/min(rcvg)
 	argc <- 0; argcRNA <- 0
-	plotmat<-list();scalevec<-list();key_limits<-list()
+	plotmat<-list();scalevec<-list();key_limits<-list();usize<-NULL
 	plotmatRNA<-list()
 	if(hmapc){
 		plotmatRNA<-hmap
@@ -130,24 +129,40 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 			if(spliced(arg)){
 				argcRNA <- argcRNA+1
 				
-				dsts <- sliceNT(arg, gtf=gtf, tnames=regions$transcript_id, control = ctrl,treads_norm = norm_readc)
-				ptv_order$Transcipt_length<-unlist(lapply(dsts,length))
-				
-				dsts<-.gene2window(dsts,ex_windows,window_fun="approx")
-				
+				if(ex_windows>0){
+					if(bin_method=="approx"){
+						dsts <- sliceNT(arg, gtf=gtf, tnames=regions$transcript_id, control = ctrl,treads_norm = norm_readc,concatenate=T,stranded=T)
+						dsts<-.gene2window(dsts,ex_windows,window_fun="approx")
+					}else{dsts <- sliceNT(arg, gtf=gtf, tnames=regions$transcript_id, control = ctrl,treads_norm = norm_readc,concatenate=T,stranded=T,nbins=ex_windows,bin_method=bin_method)}
+				}
 				dsts<- do.call(rbind, dsts)/rvec[argcRNA]#matrix for fast plotting normalized by total reads
 				plotmatRNA[[argcRNA]] <- dsts
 				
 			}else{
 				argc <- argc + 1
-				dsts <- sliceN(arg, regions, control = ctrl,treads_norm = norm_readc)
+				
+				if(argc==1){
+					usize<-unique(regions[,3]-regions[,2])+1
+					if(length(usize)>1)stop("If non spliced DensityContainer are passed, all regions must have equal length")
+					if(peak_windows>usize)stop("peak_windows has to be less or equal than the peak width")
+				}
+				
+				if(peak_windows>0){
+					if(bin_method=="approx"){
+						dsts <- sliceN(arg, regions, control = ctrl,treads_norm = norm_readc)
+						dsts<-.gene2window(dsts,peak_windows,window_fun="approx")
+					}else{dsts<-sliceN(arg, regions, control = ctrl,treads_norm = norm_readc,nbins=peak_windows,bin_method=bin_method)}#.Call("approx_window",peak_windows,dsts,bin_method,PACKAGE = "TransView")}
+				}else{
+					dsts <- sliceN(arg, regions, control = ctrl,treads_norm = norm_readc)
+					peak_windows<-usize
+				}      
+				
+				
+				
 				if(stranded_peak && "strand" %in% colnames(regions)){#flip negative strand at the tss
 					oord<-which(regions$strand == "-")
 					dsts[oord]<-lapply(dsts[oord],rev)
 				}
-				usize <- unique(sapply(dsts, length))/interpolate
-				if (length(usize) > 1)stop("The query regions must have equal length")
-				if(interpolate>1)dsts<-.gene2window(dsts,usize,window_fun="approx")
 				
 				dsts<- do.call(rbind, dsts)/nvec[argc]
 				plotmat[[argc]] <- dsts
@@ -418,7 +433,7 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 	
 	### ###
 	
-
+	
 	#### PLOT CLUSTER ####
 	if(showPlot)par(mar=c(0,0,1,0))#c(bottom, left, top, right)
 	if(is.numeric(rowv)){
@@ -461,9 +476,8 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 	for (argn in 1:argc) {
 		if(argc==0)break
 		if(showPlot)image(rotate(plotmat[[argn]][ptv_order$NewPosition,]), col = col[[argn]], useRaster = T, axes = F)
-		lplot<-dim(plotmat[[argn]])[2]*interpolate
-		if(set_zero=="center")set_zero<-lplot/2
-		if(showPlot)lines(c(set_zero/lplot,set_zero/lplot),c(0,1),col=rgb(0,0,0,alpha=zero_alpha),lwd=3,lty=1)
+		if(set_zero=="center")set_zero<-usize/2
+		if(showPlot)lines(c(set_zero/usize,set_zero/usize),c(0,1),col=rgb(0,0,0,alpha=zero_alpha),lwd=3,lty=1)
 	}
 	for (argn in 1:argcRNA) {
 		if(argcRNA==0)break
@@ -493,7 +507,7 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 		for (argn in 1:argc) {
 			if(argc==0)break
 			plot.new()
-			text(seq(0,1,length.out=5),0.5, labels = round(seq(-set_zero,lplot-set_zero,lplot/4)), cex=label_size, font=2)
+			text(seq(0,1,length.out=5),0.5, labels = round(seq(-set_zero,usize-set_zero,usize/4)), cex=label_size, font=2)
 		}
 		for (argn in 1:argcRNA) {
 			if(argcRNA==0)break
@@ -512,9 +526,9 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 	
 	#### Finally return the results ####
 	
-	params<-list("colnames_peaks"=ttl,"colnames_expression"=ttlRNA,scale=scale, cluster=cluster, control = control, interpolate = interpolate, show_names=show_names, label_size=label_size, 
+	params<-list("colnames_peaks"=ttl,"colnames_expression"=ttlRNA,scale=scale, cluster=cluster, control = control, peak_windows = peak_windows, show_names=show_names, label_size=label_size, 
 			zero_alpha=zero_alpha, colr=colr, colr_df=colr_df,colour_spread=colour_spread, key_limit=key_limit, 
-			key_limit_rna=key_limit_rna, set_zero=set_zero, rowv=rowv,ex_windows=ex_windows, gclust=gclust, norm_readc=norm_readc, no_key=no_key, 
+			key_limit_rna=key_limit_rna, rowv=rowv,ex_windows=ex_windows, gclust=gclust, norm_readc=norm_readc, no_key=no_key, 
 			stranded_peak=stranded_peak, ck_size=ck_size, remove_lowex=remove_lowex, verbose=verbose,"Matrices"=hmapc,"Expression_data"=argcRNA,"Peak_data"=argc,showPlot=showPlot)
 	
 	ptv_order$NewPosition<-order(ptv_order$NewPosition)
@@ -522,7 +536,8 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 	invisible(.setTVResults(new("TVResults"),params,ptv_order,plotmat,plotmatRNA))
 	
 	### ###	
-
+	
+	
 }
 
 

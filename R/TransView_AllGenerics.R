@@ -40,13 +40,13 @@ setGeneric("spliced<-", function(dc, value) standardGeneric("spliced<-"))
 setGeneric("ex_name<-", function(dc, value) standardGeneric("ex_name<-"))
 
 #Slice DensityContainer
-setGeneric("slice1",function(dc,chrom,start,end,control=FALSE,input_method="-", treads_norm=TRUE) standardGeneric("slice1"))
-setGeneric("sliceN",function(dc,ranges,toRle=FALSE,control=FALSE,input_method="-", treads_norm=TRUE) standardGeneric("sliceN"))
+setGeneric("slice1",function(dc,chrom,start,end,control=FALSE,input_method="-", treads_norm=TRUE, nbins=0, bin_method="mean") standardGeneric("slice1"))
+setGeneric("sliceN",function(dc,ranges,toRle=FALSE,control=FALSE,input_method="-", treads_norm=TRUE, nbins=0, bin_method="mean") standardGeneric("sliceN"))
 
 
 #Slice Transcripts from DensityContainer
-setGeneric("slice1T",function(dc,tname,gtf,control=FALSE,input_method="-",concatenate=T,stranded=T, treads_norm=T) standardGeneric("slice1T"))
-setGeneric("sliceNT",function(dc,tnames,gtf,toRle=FALSE,control=FALSE,input_method="-",concatenate=T,stranded=T, treads_norm=T) standardGeneric("sliceNT"))
+setGeneric("slice1T",function(dc,tname,gtf,control=FALSE,input_method="-",concatenate=T,stranded=T, treads_norm=T, nbins=0, bin_method="mean") standardGeneric("slice1T"))
+setGeneric("sliceNT",function(dc,tnames,gtf,toRle=FALSE,control=FALSE,input_method="-",concatenate=T,stranded=T, treads_norm=T, nbins=0, bin_method="mean") standardGeneric("sliceNT"))
 
 
 #Populate DensityContainer after parseReads 

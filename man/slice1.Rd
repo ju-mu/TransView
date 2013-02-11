@@ -16,8 +16,8 @@ genomic coordinates and returns a list of read densities.
 
 }
 \usage{
-\S4method{slice1}{DensityContainer,character,numeric,numeric}(dc, chrom, start, end, control=FALSE, input_method="-",treads_norm=TRUE)
-\S4method{sliceN}{DensityContainer}(dc, ranges, toRle=FALSE, control=FALSE, input_method="-",treads_norm=TRUE)
+\S4method{slice1}{DensityContainer,character,numeric,numeric}(dc, chrom, start, end, control=FALSE, input_method="-",treads_norm=TRUE, nbins=0, bin_method="mean")
+\S4method{sliceN}{DensityContainer}(dc, ranges, toRle=FALSE, control=FALSE, input_method="-",treads_norm=TRUE, nbins=0, bin_method="mean")
 }
 
 \arguments{
@@ -46,6 +46,12 @@ and "/" will return log2 fold change ratios with an added pseudo count of 1 read
   \item{treads_norm}{
 If \code{TRUE}, the input densities are normalized to the read counts of the data set. Should not be used if the one of the 
 does not contain the whole amount of reads by e.g. placing a filter in \code{parseReads}. 
+}
+  \item{nbins}{
+If all input regions have equal length and nbins greater than 0, all densities will be summarized using the method specified by bin_method into nbins windows of approximately equal size. 
+}
+  \item{bin_method}{
+Specifies the function used to summarize the bins specified by nbins, if nbins is larger than the length of the region.
 }
 }
 \details{

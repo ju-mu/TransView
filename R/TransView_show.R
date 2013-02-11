@@ -27,8 +27,10 @@ setMethod("show",
 			cat("\n  Strands:",strands(object))
 			cat("\n  Memory usage [MB]:",round(size(object),digits=2))
 			cat("\n Available Slots:\n")
-			cat(slotNames(object))
-			cat("\n  Chromosomes:",paste(chromosomes(object),collapse="|"))
+			cat(slotNames(object),"\n")
+			cat(slotNames(object@filtered_reads),"\n")
+			cat(slotNames(object@total_reads),"\n")
+			cat("Chromosomes:",paste(chromosomes(object),collapse="|"))
 			cat("\n")
 		}
 )

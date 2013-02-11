@@ -16,8 +16,8 @@ genomic coordinates and returns a list of read densities.
 
 }
 \usage{
-\S4method{slice1T}{DensityContainer,character}(dc, tname,  gtf, control=FALSE, input_method="-", concatenate=T, stranded=T, treads_norm=T)
-\S4method{sliceNT}{DensityContainer,character}(dc, tnames,  gtf, toRle=FALSE, control=FALSE, input_method="-", concatenate=T, stranded=T, treads_norm=T)
+\S4method{slice1T}{DensityContainer,character}(dc, tname,  gtf, control=FALSE, input_method="-", concatenate=T, stranded=T, treads_norm=T, nbins=0, bin_method="mean")
+\S4method{sliceNT}{DensityContainer,character}(dc, tnames,  gtf, toRle=FALSE, control=FALSE, input_method="-", concatenate=T, stranded=T, treads_norm=T, nbins=0, bin_method="mean")
 }
 
 \arguments{
@@ -49,6 +49,12 @@ If TRUE, the resulting vector will be reversed for reads on the reverse strand.
   \item{treads_norm}{
 If \code{TRUE}, the input densities are normalized to the read counts of the data set. Should not be used if the one of the 
 does not contain the whole amount of reads by e.g. placing a filter in \code{parseReads}. 
+}
+  \item{nbins}{
+If concatenate is set TRUE and nbins are greater than 0, all densities will be summarized using the method specified by bin_method into nbins windows of approximately equal size. 
+}
+  \item{bin_method}{
+Specifies the function used to summarize the bins specified by nbins, if nbins is larger than the length of the region.
 }
 }
 \details{

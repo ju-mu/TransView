@@ -11,7 +11,7 @@
 #' @return 
 #' @author Julius Muller
 #' @export
-.sliceN<-function(dc,ranges,toRle=FALSE,control=FALSE,input_method="-",treads_norm=TRUE) {
+.sliceN<-function(dc,ranges,toRle=FALSE,control=FALSE,input_method="-",treads_norm=TRUE, nbins=0, bin_method="mean") {
 	env1<-env(dc)
 	if(!is.logical(control))env2<-env(control)
 	if(class(ranges)[1] == "GRanges"){
@@ -29,6 +29,14 @@
 		if(any(is.na(ranges[,2])) || any(is.na(ranges[,3])))stop("column 2 [start] and column 3 [end] in ranges must be numeric")
 	}
 	ranges<-ranges[order(ranges[,1],ranges[,2]),,drop=F]
+	
+	if(length(nbins)==1 && is.numeric(nbins) && nbins>0){
+		if(!(bin_method %in% c("mean","median","max")))stop("bin_method must be either 'mean','median' or 'max'");
+		if(length(unique(ranges[,3]-ranges[,2]))>1)stop("All ranges must have equal length if nbins is greater than 0")
+	} else if(nbins!=0) {
+		stop("nbins must be a positive integer");
+	}	
+	
 	seqes<-vector("list", length(ranges[,1]))
 	names(seqes)<-rownames(ranges)
 	chroms<-unique(ranges[,1])
@@ -44,12 +52,12 @@
 		uslices<-ranges[which(ranges[,1] == chrom),c(2,3)]
 		slicenames<-rownames(uslices)
 		dp<-data_pointer(dc)
-		tlist<-.Call("slice_dc",env1[[dp]][[chrg]],env1[[dp]][[chrl]],env1[[dp]][[chrom]],uslices[,1],uslices[,2],PACKAGE = "TransView")
+		tlist<-.Call("slice_dc",env1[[dp]][[chrg]],env1[[dp]][[chrl]],env1[[dp]][[chrom]],uslices[,1],uslices[,2],nbins,bin_method,PACKAGE = "TransView")
 		
 		if(!is.logical(control)){#check input
 			#starts<-ranges[which(ranges[,1] == chrom),2]#re set as starts might have changed in slice_dc
 			dp2<-data_pointer(control)
-			input_dense<-.Call("slice_dc",env2[[dp2]][[chrg]],env2[[dp2]][[chrl]],env2[[dp2]][[chrom]],uslices[,1],uslices[,2],PACKAGE = "TransView")
+			input_dense<-.Call("slice_dc",env2[[dp2]][[chrg]],env2[[dp2]][[chrl]],env2[[dp2]][[chrom]],uslices[,1],uslices[,2],nbins,bin_method,PACKAGE = "TransView")
 			if(treads_norm){
 				norm_fact<-fmapmass(dc)/fmapmass(control)#read normalization factor
 				input_dense<-lapply(input_dense,"*",norm_fact)
@@ -100,7 +108,7 @@ setMethod("sliceN", signature(dc="DensityContainer"), .sliceN)
 #' @return 
 #' @author Julius Muller
 #' @export
-.slice1<-function(dc,chrom,start,end,control=FALSE,input_method="-",treads_norm=TRUE) {
+.slice1<-function(dc,chrom,start,end,control=FALSE,input_method="-",treads_norm=TRUE, nbins=0, bin_method="mean") {
 	env<-env(dc)
 	if(start<1)start=1
 	if(start>end)stop("end smaller than start")
@@ -111,14 +119,20 @@ setMethod("sliceN", signature(dc="DensityContainer"), .sliceN)
 		if(is.na(start) || is.na(end))stop("start and end must be numeric")
 	}
 
+	if(length(nbins)==1 && is.numeric(nbins) && nbins>0){
+		if(!(bin_method %in% c("mean","median","max")))stop("bin_method must be either 'mean','median' or 'max'");
+	} else if(nbins!=0) {
+		stop("nbins must be a positive integer");
+	}	
+	
 	chrl<-paste(chrom,"_lind",sep="");chrg<-paste(chrom,"_gind",sep="");
-	numvec<-.Call("slice_dc",env[[data_pointer(dc)]][[chrg]],env[[data_pointer(dc)]][[chrl]],env[[data_pointer(dc)]][[chrom]],start,end,PACKAGE = "TransView")[[1]];
+	numvec<-.Call("slice_dc",env[[data_pointer(dc)]][[chrg]],env[[data_pointer(dc)]][[chrl]],env[[data_pointer(dc)]][[chrom]],start,end,nbins,bin_method,PACKAGE = "TransView")[[1]];
 	
 	if(!is.logical(control)){#check input
 		env<-env(control)
 		if(class(control)[1]!="DensityContainer")stop("Input must be of class 'DensityContainer'")
 		subname<-data_pointer(control)
-		input_dense<-.Call("slice_dc",env[[subname]][[chrg]],env[[subname]][[chrl]],env[[subname]][[chrom]],start,end,PACKAGE = "TransView")[[1]]
+		input_dense<-.Call("slice_dc",env[[subname]][[chrg]],env[[subname]][[chrl]],env[[subname]][[chrom]],start,end,nbins,bin_method,PACKAGE = "TransView")[[1]]
 		
 		if(all(is.na(input_dense))){
 			warning(sprintf("%s was not found in the DensityContainer:\n%s",chrom))

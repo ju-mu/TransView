@@ -14,13 +14,20 @@
 #' @author Julius Muller
 #' @export
 
-.sliceNT<-function(dc,tnames,gtf,toRle=FALSE,control=FALSE,input_method="-",concatenate=T,stranded=T,treads_norm=T) {
+.sliceNT<-function(dc,tnames,gtf,toRle=FALSE,control=FALSE,input_method="-",concatenate=T,stranded=T,treads_norm=T, nbins=0, bin_method="mean") {
 	if(!spliced(dc))warning("dc does not contain spliced reads.\nFor ChIP-Seq slicing use sliceN.")
 	if(!is.logical(control))env2<-env(control)
 	env1<-env(dc)
 	oritnames<-tnames
 	tnames<-unique(tnames)
-
+	
+	if(length(nbins)==1 && is.numeric(nbins) && nbins>0){
+		if(!(bin_method %in% c("mean","median","max")))stop("bin_method must be either 'mean','median' or 'max'");
+		if(!concatenate)stop("if nbins is > 0, concatenate must be TRUE!");
+	} else if(nbins!=0) {
+		stop("nbins must be a positive integer");
+	}	
+	
 	if(class(gtf)[1] == "GRanges"){
 		if(!("transcript_id" %in% colnames(values(gtf))))stop("Column 'transcript_id' missing in gtf metadata")
 		transc<-gtf[which(values(gtf)$transcript_id %in% tnames)]
@@ -60,12 +67,12 @@
 		uslices<-uslices[order(uslices[,1]),]
 		slicenames<-rownames(uslices)
 		dp<-data_pointer(dc)
-		tlist<-.Call("slice_dc",env1[[dp]][[chrg]],env1[[dp]][[chrl]],env1[[dp]][[chrom]],uslices[,1],uslices[,2],PACKAGE = "TransView")
+		tlist<-.Call("slice_dc",env1[[dp]][[chrg]],env1[[dp]][[chrl]],env1[[dp]][[chrom]],uslices[,1],uslices[,2],0,bin_method,PACKAGE = "TransView")
 		names(tlist)<-slicenames
 		if(!is.logical(control)){#check input
 			if(class(control)[1]!="DensityContainer")stop("Input must be of class 'DensityContainer'")
 			dp2<-data_pointer(control)
-			input_dense<-.Call("slice_dc",env2[[dp2]][[chrg]],env2[[dp2]][[chrl]],env2[[dp2]][[chrom]],uslices[,1],uslices[,2],PACKAGE = "TransView")
+			input_dense<-.Call("slice_dc",env2[[dp2]][[chrg]],env2[[dp2]][[chrl]],env2[[dp2]][[chrom]],uslices[,1],uslices[,2],0,bin_method,PACKAGE = "TransView")
 			if(treads_norm){
 				norm_fact<-nreads(dc)/nreads(control)#read normalization factor
 				input_dense<-lapply(input_dense,"*",norm_fact)
@@ -100,6 +107,8 @@
 		non_un_names<-transc[which(rownames(transc) %in% orinames),5]
 		invisible(lapply(names(b),function(rn){b[[rn]]<<-unlist(seqes[which(non_un_names == rn)],use.names=F);NULL}))
 		
+		if(nbins)b<-.Call("approx_window",nbins,b,bin_method,PACKAGE = "TransView")
+		
 		if(toRle)RleList(b[oritnames])
 		else b[oritnames]
 	} else {
@@ -133,10 +142,18 @@ setMethod("sliceNT", signature(dc="DensityContainer",tnames="character"), .slice
 #' @return 
 #' @author Julius Muller
 #' @export
-.slice1T<-function(dc,tname,gtf,control=FALSE,input_method="-",concatenate=T,stranded=T,treads_norm=T) {
+.slice1T<-function(dc,tname,gtf,control=FALSE,input_method="-",concatenate=T,stranded=T,treads_norm=T, nbins=0, bin_method="mean") {
 	if(!spliced(dc))warning("Input dc does not contain spliced reads.\nFor ChIP-Seq slicing use slice1.")
 	if(!is.logical(control))env2<-env(control)
 	env<-env(dc)
+	
+	if(length(nbins)==1 && is.numeric(nbins) && nbins>0){
+		if(!(bin_method %in% c("mean","median","max")))stop("bin_method must be either 'mean','median' or 'max'");
+		if(!concatenate)stop("if nbins is > 0, concatenate must be TRUE!");
+	} else if(nbins!=0) {
+		stop("nbins must be a positive integer");
+	}	
+	
 	if(class(gtf)[1] == "GRanges"){
 		if(!("transcript_id" %in% colnames(values(gtf))))stop("Column 'transcript_id' missing in gtf metadata")
 		transc<-gtf[which(values(gtf)$transcript_id == tname)]
@@ -162,14 +179,14 @@ setMethod("sliceNT", signature(dc="DensityContainer",tnames="character"), .slice
 	starts<-transc[,"start"]
 	ends<-transc[,"end"]
 	
-	tlist<-.Call("slice_dc",env[[data_pointer(dc)]][[chrg]],env[[data_pointer(dc)]][[chrl]],env[[data_pointer(dc)]][[chrom]],starts,ends,PACKAGE = "TransView")
+	tlist<-.Call("slice_dc",env[[data_pointer(dc)]][[chrg]],env[[data_pointer(dc)]][[chrl]],env[[data_pointer(dc)]][[chrom]],starts,ends,0,bin_method,PACKAGE = "TransView")
 	
 	if(all(is.na(tlist))){
 		warning(sprintf("%s was not found in the DensityContainer:\n%s",chrom))
 	}else if(!is.logical(control)){#check input
 		subname<-data_pointer(control)
 		
-		input_dense<-.Call("slice_dc",env2[[subname]][[chrg]],env2[[subname]][[chrl]],env2[[subname]][[chrom]],starts,ends,PACKAGE = "TransView")
+		input_dense<-.Call("slice_dc",env2[[subname]][[chrg]],env2[[subname]][[chrl]],env2[[subname]][[chrom]],starts,ends,0,bin_method,PACKAGE = "TransView")
 		
 		if(treads_norm){
 			norm_fact<-nreads(dc)/nreads(control)#read normalization factor
@@ -190,7 +207,10 @@ setMethod("sliceNT", signature(dc="DensityContainer",tnames="character"), .slice
 		tlist<-lapply(tlist,rev)
 		tlist<-tlist[order(names(tlist))]
 	}
-	if(concatenate)tlist<-unlist(tlist,use.names=F)
+	if(concatenate){
+		tlist<-unlist(tlist,use.names=F)
+		if(nbins)tlist<-.Call("approx_window",nbins,list(tlist),bin_method,PACKAGE = "TransView")[[1]]
+	}
 	return(tlist)
 }
 

@@ -43,7 +43,7 @@
 	if(argc){
 		plotmat<-lapply(scores_peaks(tvr),function(x){x[ptv_order$Original,]}) 
 		usize<-ncol(plotmat[[1]])
-		mmid<- (round(-params[["set_zero"]]):round(params[["set_zero"]]))[1:usize]
+		mmid<-round(seq( from=-(usize/2),to=usize/2,length.out=usize))
 		
 		knames<-unlist(lapply(paste("Cluster",1:cluster,sep=""),rep,usize))
 		rnames<-unlist(lapply(paste("Column",1:argc,sep="_"),rep,usize*cluster))

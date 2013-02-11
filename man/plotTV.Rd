@@ -8,11 +8,11 @@ Plot and cluster global read densities
 Plotting facility for \code{DensityContainer}. 
 }
 \usage{
-plotTV( ..., regions, gtf=NA, scale="global", cluster="none", control = F, interpolate = 1, 
-		show_names=T, label_size=1, zero_alpha=0.5, colr=c("white","blue", "red"), colr_df="redgreen",
-		colour_spread=c(0.05,0.05), key_limit="auto", key_limit_rna="auto", set_zero="center", rowv=NA,
-		ex_windows=5, gclust="peaks", norm_readc=T, no_key=F, stranded_peak=T, ck_size=c(2,1), remove_lowex=0,
-		 verbose=1, showPlot=T, name_width=2)
+plotTV( ..., regions, gtf=NA, scale="global", cluster="none", control = F, peak_windows = 0, ex_windows=100,
+		bin_method="mean", show_names=T, label_size=1, zero_alpha=0.5, colr=c("white","blue", "red"), 
+		colr_df="redgreen",	colour_spread=c(0.05,0.05), key_limit="auto", key_limit_rna="auto", 
+		set_zero="center", rowv=NA,	gclust="peaks", norm_readc=T, no_key=F, stranded_peak=T, 
+		ck_size=c(2,1), remove_lowex=0, verbose=1, showPlot=T, name_width=2)
 }
 
 \arguments{
@@ -33,9 +33,6 @@ Sets the clustering method of the read densities. Defaults to \sQuote{none}. If 
 }
   \item{control}{
 A vector of \linkS4class{DensityContainer} objects, matching the order of experiments passed as a first argument. E.g. \code{plotTV(ex1,ex2,ex3,subInput=c(controlX,controlX,controlY)}. The content will be treated as background densities and subtracted from the matching experiment.
-}
-  \item{interpolate}{
-Sets the amount of base pairs within the plots that will be linearly interpolated. As data sets from expression analysis are interpolated by default due to their varying gene length, this option only affects the binding profiles.
 }
   \item{show_names}{
 If \code{TRUE}, peak labels and transcript IDs will be displayed on the left and the right of the plot respectively. 
@@ -66,9 +63,15 @@ if set to an integer, it determines the zero point of the x axis below the plot.
 }
   \item{rowv}{
 If a numeric vector is provided, no clustering will be performed and all rows will be ordered based on the values of this vector. Alternatively a TVResults object can be provided to reproduce previous k-means clustering. 
+}  
+  \item{peak_windows}{
+If set to an integer greater than 0, all binding profiles will we interpolated into this amount of windows by the method specified by \code{bin_method}.
 }
   \item{ex_windows}{
-An integer that determines the amount of points at which the read densities of an expression experiment will get interpolated by the \code{approx} function.
+An integer that determines the amount of points at which the read densities of an expression experiment will get interpolated by the method specified by \code{bin_method}.
+}  
+  \item{bin_method}{
+Specifies the function used to summarize the bins specified by nbins, if nbins is larger than the length of the region. Possible methods are \sQuote{max}, \sQuote{mean}, \sQuote{median} or \sQuote{approx} for linear interpolation. 
 }
   \item{gclust}{
 If \code{cluster} is not set to \sQuote{none}, this character string determines the cluster group. If set to \sQuote{expression} or \sQuote{peaks}, only the expression profile or peak profile data sets will be used to perform the clustering respectively. All data sets passed will be reordered based on the results of the clustering. If set to \sQuote{both}, all data sets will be treated as one matrix and clustered altogether.  
@@ -97,6 +100,7 @@ If \code{FALSE}, plotting will be suppressed and only the \linkS4class{TVResults
   \item{name_width}{
 Determines the width of the space for the peak and gene names.
 }  
+
 }
 \details{
 
