@@ -1,16 +1,29 @@
 
+/*
+ * bin_density.c
+ *
+ *  Created on: February 8, 2013
+ *      Author: Julius Muller
+ */
+
+/**
+ *  @file	bin_density.c
+ *  @brief	Convenience functions to provide fast binning of the density vectors
+ */
+
+
 #include <math.h>
 #include <signal.h>
 #include "bin_density.h"
 
 /**
-* @brief Computes the median
+* @brief Computes the max
 *
 * @param cpos Pointer to start index in orivec
 * @param wwidth width of window
 * @param orivec Original vector
-* @return Median value
-* @details Adopted from http://en.wikiversity.org/wiki/C_source_code_to_find_the_median_and_mean
+* @return Max value
+* @details
 * @note Nothing
 * @todo Nothing
 */
@@ -96,14 +109,14 @@ void shrink(int * orivec, int * newvec, int orivecl, int window_count, int (*sum
 }
 
 /**
-* @brief Expands a longer vector into approximately equally
+* @brief Expands a vector into a longer vector of approximately equally sized bins.
 *
 * @param orivec Pointer to original vector
 * @param wwidth Pointer to empty vector of size wsize
 * @param orivecl length of the original vector
 * @param wsize Window width of the vector that will be returned
 * @return Modifies newvec
-* @details Walks through the vector window by window and calls summarizep each time
+* @details Walks through the vector and expands window by window
 * @note Nothing
 * @todo Nothing
 */
@@ -125,13 +138,13 @@ void expand(int * orivec, int * newvec, int orivecl, int window_count){
 
 
 /**
-* @brief Computes the median
+* @brief Computes the max
 *
 * @param cpos Pointer to start index in orivec
 * @param wwidth width of window
 * @param orivec Original vector
-* @return Median value
-* @details Adopted from http://en.wikiversity.org/wiki/C_source_code_to_find_the_median_and_mean
+* @return Max value
+* @details
 * @note Nothing
 * @todo Nothing
 */
@@ -218,14 +231,14 @@ void shrink_dble(double * orivec, double * newvec, int orivecl, int window_count
 }
 
 /**
-* @brief Expands a longer vector into approximately equally
+* @brief Expands a vector into a longer vector of approximately equally sized bins.
 *
 * @param orivec Pointer to original vector
 * @param wwidth Pointer to empty vector of size wsize
 * @param orivecl length of the original vector
 * @param wsize Window width of the vector that will be returned
 * @return Modifies newvec
-* @details Walks through the vector window by window and calls summarizep each time
+* @details Walks through the vector and expands window by window
 * @note Nothing
 * @todo Nothing
 */
@@ -249,11 +262,11 @@ void expand_dble(double * orivec, double * newvec, int orivecl, int window_count
 /**
 * @brief Summarizes a list of vectors into a list of binned vectors of equal length. Each vector bin summarizes an approximately equal amount of values.
 *
-* @param method Charater array defining the method to be used for binning. Can be ''
+* @param method Charater array defining the method to be used for binning. Can be 'mean' 'media' or 'max'
 * @param score_list List with numeric vectors
 * @param window_size Window width of the vectors that will be returned
 * @return List with updated vectors
-* @details Walks through the vectors and calls shrink to set vectors to equal widths
+* @details Walks through the vectors and calls shrink or expand to set vectors to equal widths
 * @note Nothing
 * @todo Nothing
 */

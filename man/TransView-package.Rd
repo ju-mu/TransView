@@ -4,7 +4,8 @@
 \alias{TransView}
 \docType{package}
 \title{
-The TransView package: Construction and visualisation of read density maps.
+Read density map construction and accession. Visualization of
+ChIPSeq and RNASeq data sets.
 }
 \description{
 This package provides efficient tools to generate, access and display 
@@ -14,17 +15,16 @@ This package provides efficient tools to generate, access and display
 \tabular{ll}{
 Package: \tab TransView\cr
 Type: \tab Package\cr
-Version: \tab 1.2.1\cr
+Version: \tab 1.2.4\cr
 URL: \tab http://bioconductor.org/packages/release/bioc/html/TransView.html\cr
 License: \tab GPL-3\cr
 LazyLoad: \tab yes\cr
 Depends: \tab methods,GenomicRanges\cr
 Imports: \tab Rsamtools,zlibbioc,gplots,IRanges\cr
-Suggests: \tab RUnit,ggplot2\cr
-biocViews: \tab 
-Bioinformatics,DNAMethylation,GeneExpression,Transcription,Microarray,
-Sequencing,HighThroughputSequencing,ChIPseq,RNAseq,Methylseq,DataImport,
-Visualization,Clustering,MultipleComparisons\cr
+Suggests: \tab RUnit,pasillaBamSubset\cr
+biocViews: \tab Bioinformatics,DNAMethylation,GeneExpression,Transcription,
+Microarray,Sequencing,HighThroughputSequencing,ChIPseq,RNAseq,
+Methylseq,DataImport,Visualization,Clustering,MultipleComparisons\cr
 LinkingTo: \tab Rsamtools\cr
 }
 
@@ -32,9 +32,9 @@ Index:
 \preformatted{
 DensityContainer-class
                         Class '"DensityContainer"'
-TransView-package       The TransView package: Construction of read
-                        density maps. Visualisation of ChIPSeq and
-                        RNASeq data.
+TVResults-class         Class '"TVResults"'
+TransView-package       The TransView package: Construction and
+                        visualisation of read density maps.
 annotatePeaks           Associates peaks to TSS
 gtf2gr                  GTF file parsing
 histogram-methods       Histogram of the read distribution
@@ -43,6 +43,7 @@ parseReads              User configurable efficient assembly of read
                         density maps
 peak2tss                Changes the peak center to the TSS
 plotTV                  Plot and cluster global read densities
+plotTVData              Summarize plotTV results
 rmTV                    Free space occupied by DensityContainer
 slice1                  Slice read densities from a TransView dataset
 slice1T                 Slice read densities of whole transcripts from

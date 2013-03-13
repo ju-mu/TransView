@@ -270,18 +270,15 @@ gtf2gr<-function(gtf_file,chromosomes=NA,refseq_nm=F, gtf_feature=c("exon"),tran
 	GTF<-GTF[which(GTF$type %in% gtf_feature),]
 	GTF<-GTF[which(GTF$end-GTF$start > 1),]
 	GTF<-GTF[,-which(colnames(GTF)=="type")]
-	if(dim(GTF)[1]==0)stop("No matching exon entries found in GTF")
+	if(nrow(GTF)==0)stop("No matching exon entries found in GTF")
 	if(substr(GTF[1,2],1,3)!="chr")GTF[,2]<-paste("chr",GTF[,2],sep="")# for chromosome IDs without chr
 	if(is.character(chromosomes))GTF<-GTF[which(tolower(GTF[,2]) %in% tolower(chromosomes)),]
-	if(dim(GTF)[1]==0){cat("Chromosome names not matching GTF\n");stop()}
+	if(nrow(GTF)==0){cat("Chromosome names not matching GTF\n");stop()}
 	GTF<-GTF[which(GTF$strand %in% c("+","-")),]
-	transpos<-which(strsplit(GTF[1,1]," ")[[1]] == transcript_id)+1
-	gpos<-which(strsplit(GTF[1,1]," ")[[1]] == gene_id)+1
-	if(length(gpos)>0){
-		genes<-gsub(";|\"","",unlist(lapply(strsplit(GTF[,1]," "),"[",gpos)))
-		GTF$gene_id<-genes
-	}
-	GTF[,1]<-gsub(";|\"","",unlist(lapply(strsplit(GTF[,1]," "),"[",transpos)))
+	transpos<-grep(transcript_id,strsplit(GTF[1,1],";")[[1]])
+	gpos<-grep(gene_id,strsplit(GTF[1,1],";")[[1]])
+	if(length(gpos)>0)GTF$gene_id<-gsub(paste("^ +",gene_id," ",sep=""),"",sapply(strsplit(GTF[,1],";"),"[",gpos))
+	GTF[,1]<-gsub(paste("^ +",transcript_id," ",sep=""),"",sapply(strsplit(GTF[,1],";"),"[",transpos))
 	if(refseq_nm)GTF<-GTF[which(substring(GTF[,1],1,2)=="NM"),]
 	
 	GTF_se<-GTF[which(GTF$strand == "+"),]
@@ -302,7 +299,6 @@ gtf2gr<-function(gtf_file,chromosomes=NA,refseq_nm=F, gtf_feature=c("exon"),tran
 	
 	gr  
 }
-
 
 #' Convert a vector of IDs matching the transcript_id column of the GTF into a TSS centred data.frame
 #' @param peaks

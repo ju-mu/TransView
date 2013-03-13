@@ -1,4 +1,12 @@
 
+CHANGES IN VERSION 1.2.4
+------------------------
+
+BUG FIXES
+
+    o gtf2gr() can now handle gene and transcript IDs with white spaces.
+
+
 CHANGES IN VERSION 1.2.3
 ------------------------
 
