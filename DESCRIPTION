@@ -2,7 +2,7 @@ Package: TransView
 Type: Package
 Title: Read density map construction and accession. Visualization of
        ChIPSeq and RNASeq data sets.
-Version: 1.2.4
+Version: 1.2.5
 Author: Julius Muller
 Maintainer: Julius Muller <ju-mu@alumni.ethz.ch>
 Description: This package provides efficient tools to generate, access and 

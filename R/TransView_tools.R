@@ -138,8 +138,7 @@ macs2gr<-function(macs_peaks_xls,psize=500,amount="all",min_pileup=0,log10qval=0
 #' @return 
 #' @author Julius Muller
 #' @export
-annotatePeaks<-function(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T, 
-		unifyBy=F, unify_fun="mean", min_genelength=300){
+annotatePeaks<-function(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T, unifyBy=F, unify_fun="mean", min_genelength=300){
 	
 	if(class(peaks)[1]!="GRanges")stop("peaks must be of class 'GRanges'")
 	if(class(gtf)[1]!="GRanges")stop("gtf must be of class 'GRanges'")
@@ -222,7 +221,7 @@ annotatePeaks<-function(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T,
 	if(class(unifyBy)[1]=="DensityContainer"){
 		if(!spliced(unifyBy))stop("unifyBy can only be used with RNA-Seq DensityContainer")
 		
-		nurefs<-closest_ref[which(unlist(lapply(closest_ref,nrow))>1)]
+		nurefs<-closest_ref[which(unlist(sapply(closest_ref,function(x){y<-nrow(x);if(is.null(y))1 else y}))>1)]
 		
 		if(length(nurefs)>0){
 			nupeaks<-names(nurefs)

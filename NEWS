@@ -1,4 +1,12 @@
 
+CHANGES IN VERSION 1.2.5
+------------------------
+
+BUG FIXES
+
+    o annotatePeaks did not accurately resolve ambiguities in some instances.
+
+
 CHANGES IN VERSION 1.2.4
 ------------------------
 
