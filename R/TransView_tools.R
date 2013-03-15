@@ -78,53 +78,60 @@
 #' @return 
 #' @author Julius Muller
 #' @export
-macs2gr<-function(macs_peaks_xls,psize=500,amount="all",min_pileup=0,log10qval=0,log10pval=0,
-		fenrichment=0,peak_mid="summit"){
+macs2gr<-function(macs_peaks_xls,psize=500,amount="all",min_pileup=0,log10qval=0,log10pval=0,fenrichment=0,peak_mid="summit"){
+	
+	head_required_v1_41p<-c("chr","start","end","abs_summit","pileup","log10_pval","enrichment")
+	head_required_v2_09p<-c("chr","start","end","abs_summit","pileup","log10_pval","enrichment","log10_qval")
 	
 	fh<-file(macs_peaks_xls,"r")
 	lh<-0
 	while (tolower(substr(readLines(fh, n=1),1,3))!="chr"){lh=lh+1}
 	close(fh)
-	
 	peaks<-read.delim(macs_peaks_xls,header=T,as.is=T,skip=lh,stringsAsFactors =F)
-	
-	if( peaks[1,1]=="---"){#for older versions <=1.4
-		if(log10qval!=0)stop("Version <=1.4 detected, no qvalue present in output file!")
-		if(peak_mid=="summit")stop("Version <=1.4 detected, file doesn't contain a peak summit!")
-		peaks<-peaks[c(-1,-nrow(peaks)),]
-		emptypeaks<-as.data.frame(matrix(ncol=8,nrow=nrow(peaks)))
-		emptypeaks[,c(1,2,3,6,8,7)]<-peaks[,c(1,2,3,4,6,5)]
-		peaks<-transform(emptypeaks,V2=as.numeric(emptypeaks$V2),V3=as.numeric(emptypeaks$V3),V6=as.numeric(emptypeaks$V6),V7=as.numeric(emptypeaks$V7),V8=as.numeric(emptypeaks$V8)) 
+	colnames(peaks)[grep("pvalue",colnames(peaks))]<-"log10_pval"
+	colnames(peaks)[grep("qvalue",colnames(peaks))]<-"log10_qval"
+	colnames(peaks)[grep("tags",colnames(peaks))]<-"pileup"
+	colnames(peaks)[grep("fold_enrichment",colnames(peaks))]<-"enrichment"
+	if(all(length(grep("summit",colnames(peaks)))>0,length(grep("abs_summit",colnames(peaks)))==0)){
+		colnames(peaks)[grep("summit",colnames(peaks))]<-"abs_summit"
+		peaks$abs_summit<-peaks$abs_summit+peaks$start
 	}
-	if(min_pileup>0)peaks<-peaks[which(peaks[,6]>min_pileup),]
-	if(log10qval>0)peaks<-peaks[which(peaks[,9]>log10qval),]
-	if(log10pval>0)peaks<-peaks[which(peaks[,7]>log10pval),]
-	if(fenrichment>0)peaks<-peaks[which(peaks[,8]>fenrichment),]
+	version<-0
+	if(all(head_required_v2_09p %in% colnames(peaks))){
+		version<-2.09;cat("Version 2.09+ detected\n")
+		if(log10qval>0)peaks<-peaks[which(peaks[,"log10_qval"]>log10pval),]
+	}else if(all(head_required_v1_41p %in% colnames(peaks))){
+		version<-1.41;cat("Version 1.4x detected\n")
+		if(all(log10qval!=0,length(grep("qvalue",colnames(peaks)))==0))stop("No qvalue present in this MACS file. Please set log10qval to 0")
+	}else{stop("MACS _peaks.xls file [tested on version 1.4x or 2.09] not detected. \nFor support of untested MACS versions please contact the maintainer")}
+	
+	if(fenrichment>0)peaks<-peaks[which(peaks$enrichment>=fenrichment),]
+	if(log10pval>0){peaks<-peaks[which(peaks$log10_pval>=log10pval),]}
+	if(min_pileup>0)peaks<-peaks[which(peaks$pileup>=min_pileup),]
+	
 	if(psize!="preserve"&!is.numeric(psize))stop("Please provide psize or set psize to 'preserve'")
-	cat(paste(dim(peaks)[1],"peaks matching\n"))
-	peaks<-peaks[order(peaks[,6],decreasing=T),]
-	if(psize=="preserve"){
-		peaks<-peaks[,c(1,2,3,6,8,7)]
-	}else if(peak_mid=="summit"){
-		peaks<-peaks[,c(1,5,5,6,8,7)]
-		peaks[,2]<-peaks[,2]-(psize/2)
-		peaks[,3]<-peaks[,3]+(psize/2)
-	} else if(peak_mid=="center"){
-		peaks<-cbind(rowMeans(peaks[,c(2,3)]),peaks)
-		peaks<-peaks[,c(2,1,1,7,9,8)]
-		peaks[,2]<-peaks[,2]-(psize/2)
-		peaks[,3]<-peaks[,3]+(psize/2)
-	}else stop(paste("peak_mid='",peak_mid,"' not implemented",sep=""))
 	
+	cat(paste(nrow(peaks),"peaks matching\n"))
+	peaks<-peaks[order(peaks[,"pileup"],decreasing=T),]
 	
-	if(amount!="all")peaks<-peaks[1:amount,]
-	colnames(peaks)<-c("chr","start","end","pileup","enrichment","log10_pval")
-	gr<-GRanges(ranges=IRanges(start=peaks$start,end=peaks$end),strand="*",seqnames=peaks$chr)
+	if(psize!="preserve"){
+		if(peak_mid=="summit"){
+			peaks$start<-peaks$abs_summit-(psize/2)
+			peaks$end<-peaks$abs_summit+(psize/2)
+		} else if(peak_mid=="center"){
+			pmeans<-rowMeans(peaks[,c("start","end")])
+			peaks$start<-pmeans-(psize/2)
+			peaks$end<-pmeans+(psize/2)
+		}else stop(paste("peak_mid='",peak_mid,"' not implemented",sep=""))
+	}
+	
+	if(amount!="all" & amount<nrow(peaks))peaks<-peaks[1:amount,]
+	
+	gr<-GRanges(ranges=IRanges(start=round(peaks$start),end=round(peaks$end)),strand="*",seqnames=peaks$chr)
 	elementMetadata(gr)<-cbind(pileup=peaks$pileup,enrichment=peaks$enrichment,log10_pval=peaks$log10_pval)
 	names(gr)<-paste("Peak",1:nrow(peaks),sep=".")
 	gr
 }
-
 
 #' Annotates a list of peaks with a gtf data frame
 #' @param peaks 

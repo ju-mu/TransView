@@ -1,10 +1,18 @@
 
+CHANGES IN VERSION 1.2.6
+------------------------
+
+BUG FIXES
+
+    o macs2gr() supports relative distances instead of absolute distances from older MACS version.
+    
+
 CHANGES IN VERSION 1.2.5
 ------------------------
 
 BUG FIXES
 
-    o annotatePeaks did not accurately resolve ambiguities in some instances.
+    o annotatePeaks() did not accurately resolve ambiguities in some instances.
 
 
 CHANGES IN VERSION 1.2.4
