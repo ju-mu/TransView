@@ -22,10 +22,10 @@ genomic coordinates and returns a list of read densities.
 
 \arguments{
   \item{dc}{
-A \linkS4class{DensityContainer} object
+Source \linkS4class{DensityContainer} object
 }
   \item{chrom}{
-A case sensitive string of the chromosome 
+A case sensitive string of the chromosome
 }
   \item{start,end}{
 Genomic start and end of the slice
@@ -37,21 +37,19 @@ A \linkS4class{GRanges} object or a data.frame.
 The return values will be converted to a \code{RleList}. 
 }
   \item{control}{
-Optional \linkS4class{DensityContainer} which will used as control and by default subtracted from \code{dc}
+An optional \linkS4class{DensityContainer} which will used as control and by default subtracted from \code{dc}.
 }
   \item{input_method}{
-Defines the background handling of the density map. "-" will subtract the background from the actual data 
-and "/" will return log2 fold change ratios with an added pseudo count of 1 read.
+Defines the handling of the optional control \linkS4class{DensityContainer}. \sQuote{-} will subtract the control from the actual data and \sQuote{/} will return log2 fold change ratios with an added pseudo count of 1 read.
 } 
   \item{treads_norm}{
-If \code{TRUE}, the input densities are normalized to the read counts of the data set. Should not be used if the one of the 
-does not contain the whole amount of reads by e.g. placing a filter in \code{parseReads}. 
+If \code{TRUE}, the input densities are normalized to the read counts of the data set. Should not be used if one of the \code{DensityContainer} objects does not contain the whole amount of reads by e.g. placing a filter in \code{parseReads}. 
 }
   \item{nbins}{
 If all input regions have equal length and nbins greater than 0, all densities will be summarized using the method specified by bin_method into nbins windows of approximately equal size. 
 }
   \item{bin_method}{
-Specifies the function used to summarize the bins specified by nbins, if nbins is larger than the length of the region.
+Character string that specifies the function used to summarize or expand the bins specified by nbins. Valid methods are \sQuote{max}, \sQuote{mean} or \sQuote{median}.
 }
 }
 \details{

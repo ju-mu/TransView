@@ -340,4 +340,59 @@ peak2tss<-function(peaks, gtf, peak_len=500){
 	peaks
 }
 
+#' Convenience function meltPeaks(), which returns a data frame with normalized peak densities suitable for plotting with ggplot2 
+#' @param ... 
+#' @param regions
+#' @param peak_name
+#' @param control 
+#' @param peak_windows 
+#' @param bin_method
+#' @returnType data.frame
+#' @return 
+#' @author Julius Muller
+#' @export
+meltPeak<-function (..., regions, peak_name, control=FALSE, peak_windows = 0, bin_method="mean", norm_readc=TRUE)
+{
+	argList<-list(...)
+	
+	if(!peak_name %in% names(regions))stop("Peak name not in regions")
+	if(class(regions)[1]!="GRanges" || !all(c("transcript_id","distance") %in% names(mcols(regions)))){stop("regions must be the annotated output of annotatePeaks or a GRanges object with transcript_id and distance metadata columns")
+	}else{region<-regions[peak_name]}
+	if(!is.logical(control) && length(control)!=length(argList))stop("If control is provided, it must match the amount of experiments.")
+	
+	
+	tcvg<-c();ttl<-c()
+	for (arg in argList) {
+		if (!.is.dc(arg)) stop("Data sets must be of any number of class 'DensityContainer'")
+		tcvg <- c(tcvg, ifelse(norm_readc,fmapmass(arg),1))
+		ttl<-c(ttl,ex_name(arg))
+	}
+	
+	if(is.numeric(peak_windows) && peak_windows>=0){usize<-ifelse(peak_windows==0,width(region),peak_windows)
+	}else(stop("peak_windows must be a positive integer"))
+	
+	nvec <- tcvg/min(tcvg)
+	argc <- 0;mpops<-approx(start(region):end(region),n=usize)$y
+	if(norm_readc){plotdf<-data.frame(NormalizedReads=c(rep(rep(0,usize),length(argList))),Position=c(rep(mpops,length(argList))),Label=c(rep(rep(NA,usize),length(argList))),stringsAsFactors=F)
+	}else{plotdf<-data.frame(Reads=c(rep(rep(0,usize),length(argList))),Position=c(rep(mpops,length(argList))),Label=c(rep(rep(NA,usize),length(argList))),stringsAsFactors=F)}
+	rlab<-colnames(plotdf)[1]
+	
+	for (arg in argList) {
+		argc <- argc + 1
+		if (!is.logical(control)){
+			if(!.is.dc(control[[argc]]))stop("Input must be of class 'DensityContainer'")
+			ctrl<-control[[argc]]
+		}else{ctrl<-F}
+		
+		if(peak_windows>0){
+			if(bin_method=="approx"){
+				dsts <- slice1(arg, chrom=as.character(seqnames(region)), start=start(region), end=end(region), control = ctrl, treads_norm = T)
+				dsts<-approx(dsts,n=peak_windows)$y
+			}else{dsts<-slice1(arg, chrom=as.character(seqnames(region)), start=start(region), end=end(region), control=ctrl, treads_norm=T, nbins=peak_windows, bin_method=bin_method)}
+		}else{dsts <- slice1(arg, chrom=as.character(seqnames(region)), start=start(region), end=end(region), control = ctrl, treads_norm = T)}      
+		plotdf[(1+(argc-1)*usize):(argc*usize),rlab] <- dsts/nvec[argc]
+		plotdf[(1+(argc-1)*usize):(argc*usize),"Label"] <- ex_name(arg)
+	}
+	return(plotdf)
+}
 

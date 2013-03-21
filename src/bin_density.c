@@ -262,7 +262,7 @@ void expand_dble(double * orivec, double * newvec, int orivecl, int window_count
 /**
 * @brief Summarizes a list of vectors into a list of binned vectors of equal length. Each vector bin summarizes an approximately equal amount of values.
 *
-* @param method Charater array defining the method to be used for binning. Can be 'mean' 'media' or 'max'
+* @param method Charater array defining the method to be used for binning. Can be 'mean' 'median' or 'max'
 * @param score_list List with numeric vectors
 * @param window_size Window width of the vectors that will be returned
 * @return List with updated vectors

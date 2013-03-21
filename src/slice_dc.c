@@ -70,7 +70,7 @@ SEXP slice_dc(SEXP gen_ind, SEXP l_ind, SEXP scores, SEXP start, SEXP end, SEXP 
 		summarizep=vect_max;
 	}else{
 		error("%s not known",methodn);
-		goto FINALIZE;
+		return R_NilValue;
 	}
 
 	PROTECT(dense_list = allocVector(VECSXP, total_queries));upcounter++;
@@ -149,25 +149,27 @@ SEXP slice_dc(SEXP gen_ind, SEXP l_ind, SEXP scores, SEXP start, SEXP end, SEXP 
 
 		int windex=0,beforeshift_minindex=minindex;
 		offset2score=l_indp[minindex]+(*startp+tofirst-gen_indp[minindex]);//here is the linear query start
-		blscore_end=gen_indp[minindex]+l_indp[minindex+1]-l_indp[minindex]-1;//here is the genomic position where the data in this block end
+		blscore_end=gen_indp[minindex]+l_indp[minindex+1]-l_indp[minindex]-1;//here is the genomic position of the data-block-end
 
 		if(offset2score<0 || offset2score>gen_indp[minindex+1])error("ERROR IN INDEX\n");
 		for(k=*startp+tofirst;k<=*endp;k++){
-			if(rebuildc>=scores2write)break;//if enough bps are reconstructed
+			if(rebuildc>=scores2write)break;//if all bps are reconstructed
 			if(k==gen_indp[minindex+1]){//if the next block is reached
 				minindex++;
-				if(minindex==total_indexes-1)blscore_end=0;//if last index is passed
+				if(minindex==total_indexes-1)blscore_end=0;//if last index is reached
 				else{
 					windex=0;//keeps track of the number of scores written within the block
 					offset2score=l_indp[minindex];//here is the location of the scores in the score vector
-					blscore_end=gen_indp[minindex]+l_indp[minindex+1]-l_indp[minindex]-1;//this many scores are located in this block
+					blscore_end=gen_indp[minindex]+l_indp[minindex+1]-l_indp[minindex]-1;//this many scores are located within this block
 				}
 			}
 			if(k<=blscore_end)slicep[rebuildc++]=*(scoresp+offset2score+windex++);//fill with scores until the next block
 			else slicep[rebuildc++]=0;//fill with scores until the next block
 		}
 		minindex=beforeshift_minindex;
+
 		FINALIZE:
+
 		if(scores2write!=rebuildc)printf("Expected / Found scores: %d <> %d [Sequence %d]",scores2write,rebuildc,slicen+1);
 
 		if(wsize && rebuildc!=wsize){
@@ -192,6 +194,7 @@ SEXP slice_dc(SEXP gen_ind, SEXP l_ind, SEXP scores, SEXP start, SEXP end, SEXP 
 	}
 
 	UNPROTECT(upcounter);
+
 	return dense_list;
 }
 

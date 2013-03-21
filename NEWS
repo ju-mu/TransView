@@ -1,4 +1,16 @@
 
+CHANGES IN VERSION 1.2.7
+------------------------
+
+NEW FEATURES
+
+    o New convenience function meltPeaks(), which returns a data frame with normalized peak densities suitable for plotting with ggplot2. 
+    
+BUG FIXES
+
+    o Minor help file corrections.
+    
+
 CHANGES IN VERSION 1.2.6
 ------------------------
 

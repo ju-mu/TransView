@@ -12,7 +12,7 @@ import(Rsamtools)
 
 
 exportClasses(DensityContainer)
-export(plotTV,parseReads,rmTV,annotatePeaks,gtf2gr,macs2gr,peak2tss)
+export(plotTV,parseReads,rmTV,annotatePeaks,gtf2gr,macs2gr,peak2tss,meltPeak)
 exportMethods(show,sliceN,slice1,sliceNT,slice1T,tvStats,plotTVData,
 histogram,ex_name,origin,spliced,paired,readthrough_pairs,filtered,strands,
 nreads,gcoverage,maxScore,lowqual,paired_reads,proper_pairs,collapsed,

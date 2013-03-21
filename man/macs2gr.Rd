@@ -40,7 +40,7 @@ Minimal enrichment.
 }
 }
 \details{
-Conveniance function parsing the output of a MACS file. Tested with MACS v1.4 and v.2.09
+Convenience function parsing the output of a MACS file. Tested with MACS v1.4 and v.2.09
 }
 
 \value{

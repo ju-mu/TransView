@@ -35,11 +35,10 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 			set_zero="center", rowv=NA,	gclust="peaks", norm_readc=T, no_key=F, stranded_peak=T, 
 			ck_size=c(2,1), remove_lowex=0, verbose=1, showPlot=T, name_width=2)
 {
-	stopifnot(is.numeric(set_zero) || set_zero=="center")
+	
 	argList<-list(...)
-	
-	
 	ttlRNA<-c();ttl<-c()
+	tcvg<-c();rcvg<-c();hmapc<-0;
 	
 	if(class(gtf)[1]!="GRanges"){
 		if(class(gtf)[1]!="logical" || !is.na(gtf))stop("gtf must be of class 'GRanges'")
@@ -79,7 +78,8 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 	if(!is.character(key_limit_rna) & (!is.numeric(key_limit_rna) | length(key_limit_rna)!=2))stop("key_limit_rna must be a numeric vector of length 2")
 	if(!(gclust %in% c("expression","peaks","both")))stop("Argument gclust must be either 'expression','peaks' or 'both'")
 	if(!(scale %in% c("global","individual")))stop("Argument scale must be either 'global' or 'individual'")
-	tcvg<-c();rcvg<-c();hmapc<-0;
+	if(!is.numeric(set_zero) && set_zero!="center")stop("set_zero must be numeric")
+	
 	for (arg in argList) {
 		
 		if (!.is.dc(arg)){
@@ -144,7 +144,6 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 				if(argc==1){
 					usize<-unique(regions[,3]-regions[,2])+1
 					if(length(usize)>1)stop("If non spliced DensityContainer are passed, all regions must have equal length")
-					if(peak_windows>usize)stop("peak_windows has to be less or equal than the peak width")
 				}
 				
 				if(peak_windows>0){
@@ -156,9 +155,7 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 					dsts <- sliceN(arg, regions, control = ctrl,treads_norm = norm_readc)
 					peak_windows<-usize
 				}      
-				
-				
-				
+
 				if(stranded_peak && "strand" %in% colnames(regions)){#flip negative strand at the tss
 					oord<-which(regions$strand == "-")
 					dsts[oord]<-lapply(dsts[oord],rev)

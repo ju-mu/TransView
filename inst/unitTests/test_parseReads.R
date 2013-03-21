@@ -66,8 +66,26 @@ test_parse_T <- function(){
 	
 }
 
-
 test_annotate<- function(){
 	apeaks<-annotatePeaks(peaks=peaks,gtf=GTF.mm9)
 	checkIdentical(values(apeaks)$transcript_id[5],"NM_011031")
 }
+
+test_melt_peak_plotTVData<- function(){
+  exden.ctrl<-parseReads(exbam[1],verbose=0,hwindow=20,compression=20)
+  exden.chip<-parseReads(exbam[2],min_quality=10,extendreads=10,read_stranded=-1,max_dups=4,verbose=0,hwindow=20,compression=20)
+  ex_name(exden.ctrl)<-"Test1"
+  ex_name(exden.chip)<-"Test2"
+  cluster_res<-plotTV(exden.chip,exden.ctrl,regions=peaks,norm_readc=FALSE,showPlot=FALSE,verbose=0,cluster="hc_pe")
+  checkEquals(as.character(na.omit(unlist(parameters(cluster_res)))),c("Test2","Test1","global","hc_pe", "FALSE", "501","TRUE", "1", "0.5","white","blue" ,"red", "redgreen","0.05", "0.05","auto", "auto" , "100", "peaks","FALSE" , "FALSE" ,"TRUE","2", "1", "0","0", "0", "0","2","FALSE" )  )
+  xdf<-summaryTV(cluster_res)
+  checkEqualsNumeric(c(15,20,5,18,1,8,3,12),xdf$Original[3:10])
+  tvdata<-plotTVData(cluster_res)
+  checkEqualsNumeric(c(17,17,18,18,19,19),round(tvdata$Average_scores[200:205]))
+  apeaks<-annotatePeaks(peaks=peaks,gtf=GTF.mm9)
+  peak5.df<-meltPeak(exden.chip,exden.chip,regions=apeaks,peak_name="Peak.5",bin_method="mean",peak_windows=800,norm_readc=F)
+  checkEqualsNumeric(peak5.df[which(peak5.df$Label=="Test2" & peak5.df$Position>53914536 & peak5.df$Position<53914538),]$Reads,c(29,29,28,29,29,28))
+}
+
+
+

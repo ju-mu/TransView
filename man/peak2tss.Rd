@@ -2,11 +2,11 @@
 \alias{peak2tss}
 
 \title{
-Changes the peak center to the TSS 
+Changes the peak center to the next TSS according to previous annotation 
 }
 
 \description{
-Converts an annotated \linkS4class{GRanges} object with peak locations to TSS centered peaks locations based on the transcript_id column .
+Sets the peak boundaries of an annotated \linkS4class{GRanges} object with peak locations to TSS centered ranges based on the transcript_id column.
 }
 
 \usage{

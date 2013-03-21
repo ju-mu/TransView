@@ -32,7 +32,7 @@ A character string that determines the row scaling of the colors. Defaults to \s
 Sets the clustering method of the read densities. Defaults to \sQuote{none}. If an integer is passed, kmeans clustering will be performed with \code{cluster} defining the amount of clusters. A colour coded bar will be plotted to the left. For hierarchical clustering the options \sQuote{hc_sp} and \sQuote{hc_pe} for spearman or pearson correlation coefficient based distances respectively, or \sQuote{hc_rm} for distances based on row means are accepted and the results will be displayed as a dendrogram.
 }
   \item{control}{
-A vector of \linkS4class{DensityContainer} objects, matching the order of experiments passed as a first argument. E.g. \code{plotTV(ex1,ex2,ex3,subInput=c(controlX,controlX,controlY)}. The content will be treated as background densities and subtracted from the matching experiment.
+A vector of \linkS4class{DensityContainer} objects, matching the order of experiments passed as a first argument. E.g. \code{plotTV(ex1.ChIP,ex2.ChIP,ex3.RNA_KO,control=c(ex1.Input,ex2.Input,ex3.RNA_WT)}. The content will be treated as background densities and subtracted from the matching experiment.
 }
   \item{show_names}{
 If \code{TRUE}, peak labels and transcript IDs will be displayed on the left and the right of the plot respectively. 
@@ -65,13 +65,13 @@ if set to an integer, it determines the zero point of the x axis below the plot.
 If a numeric vector is provided, no clustering will be performed and all rows will be ordered based on the values of this vector. Alternatively a TVResults object can be provided to reproduce previous k-means clustering. 
 }  
   \item{peak_windows}{
-If set to an integer greater than 0, all binding profiles will we interpolated into this amount of windows by the method specified by \code{bin_method}.
+If set to an integer greater than 0, all binding profiles will be interpolated into this amount of windows by the method specified by \code{bin_method}.
 }
   \item{ex_windows}{
 An integer that determines the amount of points at which the read densities of an expression experiment will get interpolated by the method specified by \code{bin_method}.
 }  
   \item{bin_method}{
-Specifies the function used to summarize the bins specified by nbins, if nbins is larger than the length of the region. Possible methods are \sQuote{max}, \sQuote{mean}, \sQuote{median} or \sQuote{approx} for linear interpolation. 
+Specifies the function used to summarize the bins specified by nbins. Possible methods are \sQuote{max}, \sQuote{mean}, \sQuote{median} or \sQuote{approx} for linear interpolation. 
 }
   \item{gclust}{
 If \code{cluster} is not set to \sQuote{none}, this character string determines the cluster group. If set to \sQuote{expression} or \sQuote{peaks}, only the expression profile or peak profile data sets will be used to perform the clustering respectively. All data sets passed will be reordered based on the results of the clustering. If set to \sQuote{both}, all data sets will be treated as one matrix and clustered altogether.  

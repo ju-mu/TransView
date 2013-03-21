@@ -431,14 +431,32 @@ extracted.
 cluster_df<-plotTVData(cluster_results)
 @
 
-The data frame contains the averaged scores of each data set passed to
-\Rfunction{plotTV}. The corresponding summaries can be visualized with e.g.
+\subsection{Further visualization}
+
+The data frame returned by \Rfunction{plotTVData} contains the averaged scores
+of each data set passed to \Rfunction{plotTV}. The corresponding summaries can be visualized with e.g.
 \Rpackage{ggplot2}:
 
 <<tplots_1_g,eval=FALSE>>=
 ggplot(cluster_df,aes(x=Position,y=Average_scores,color=Sample))+geom_point()+facet_wrap(Plot~Cluster,scales="free",ncol=5)
 @
 
+To visualize individual peaks, \TransView contains the convenience
+function \Rfunction{meltPeak} extracting the normalized read densities from the
+individual experiments. Furthermore the densities are wrapped into a data.frame
+that can be directly passed to \Rpackage{ggplot2}:
+
+<<tplots_1_e,eval=FALSE>>=
+peak1.df<-meltPeak(dens.ind,dens.wt,regions=peaks.tss,peak_name="Peak.1",peak_windows=100,norm_readc=F)
+ggplot(peak1.df,aes(x=Position,y=Reads,color=Label))+geom_line(size=2)
+@
+
+Note that  \Rfunarg{norm\_readc} is set to FALSE, since the filtered map mass in the toy example contains only a small subset of the original map mass. Normalizing to map mass would result in artificailly upscaled densities in the control experiment: 
+
+<<tplots_1_e,eval=FALSE>>=
+peak1.df<-meltPeak(dens.ind,dens.wt,regions=peaks.tss,peak_name="Peak.1",peak_windows=100,norm_readc=T)
+ggplot(peak1.df,aes(x=Position,y=NormalizedReads,color=Label))+geom_line(size=2)#Wrong!
+@
 
 \newpage
 \section{Memory usage and speed considerations}
