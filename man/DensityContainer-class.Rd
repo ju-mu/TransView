@@ -60,6 +60,10 @@
 \alias{env}
 \alias{size,DensityContainer-method}
 \alias{size}
+\alias{lsize,DensityContainer-method}
+\alias{lsize}
+\alias{gsize,DensityContainer-method}
+\alias{gsize}
 
 
 \title{Class \code{"DensityContainer"}}
@@ -88,10 +92,12 @@ dc represents a \code{"DensityContainer"} instance in the following
 	\item{\code{chromosomes(dc)}:}{Character string with the chromosomes used for map construction}
 	\item{\code{pos(dc)}:}{Reads used from the forward strand}
 	\item{\code{neg(dc)}:}{Reads used from the reverse strand}
-	\item{\code{lcoverage(dc)}:}{Local coverage which is computed by fmapmass/covered region}
+	\item{\code{lsize(dc)}:}{Total region covered by reads within the densities returned}
+	\item{\code{gsize(dc)}:}{Equals to the sum of the length of all ranges from 0 to the last read per chromosome within the chromosome.}
+	\item{\code{lcoverage(dc)}:}{Local coverage within the densities returned which is computed by local mapmass/lsize}
 	\item{\code{lmaxScore(dc)}:}{Maximum read pileup within the density maps after filtering}
-	\item{\code{fmapmass(dc)}:}{Total map mass after filtering}
-	\item{\code{nreads(dc)}:}{Total number of reads}
+	\item{\code{fmapmass(dc)}:}{Total map mass after quality filtering present in the file. Equals to filtered_reads*read length}
+	\item{\code{nreads(dc)}:}{Total number of reads in the file.}
 	\item{\code{coverage(dc)}:}{Total coverage computed by total map mass/(chromosome end - chromosome start). Chromosome length derived from the SAM/BAM header}
 	\item{\code{maxScore(dc)}:}{Maximum read pileup found in file after quality filtering}
 	\item{\code{lowqual(dc)}:}{Amount of reads that did not pass the quality score set by min_quality or were not mapped}

@@ -18,7 +18,7 @@ histogram,ex_name,origin,spliced,paired,readthrough_pairs,filtered,strands,
 nreads,gcoverage,maxScore,lowqual,paired_reads,proper_pairs,collapsed,
 compression,chromosomes,filtered_reads,pos,neg,lcoverage,lmaxScore,
 fmapmass,env,data_pointer,"spliced<-","ex_name<-",size,parameters,
-cluster_order,clusters,summaryTV
+cluster_order,clusters,summaryTV,lsize,gsize
 )
 
 

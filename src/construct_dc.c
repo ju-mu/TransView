@@ -184,7 +184,7 @@ void write_density(global_densities_t * gd,user_arguments_t * user_args,samfile_
 		cs.min_pos=0;//start position first read
 		cs.max_pos=bam_file->header->target_len[chrom_tid]+1;//+1 for 0 based sources
 
-		cs.min_scorespace=cs.max_pos-cs.min_pos+user_args->EXTEND;//expect maximally this amount of values in resulting vector - will be refined after scanning the bam
+		cs.min_scorespace=cs.max_pos+user_args->EXTEND;//expect maximally this amount of values in resulting vector - will be refined after scanning the bam
 		gd->gsize+=cs.min_scorespace;//calculate total amount of genomic region covered [spanning first read to last read]
 		//the average read size is set to only 30 to be on the safe side
 		cs.min_indexspace = cs.min_scorespace/(user_args->COMPRESSION+30);
@@ -291,7 +291,7 @@ void write_density(global_densities_t * gd,user_arguments_t * user_args,samfile_
 			}
 			if(user_args->HWINDOW>1)++gd->histogramp[windowt/user_args->HWINDOW];//empty last window | prerequisite: HWINDOW<=COMPRESSION!
 			histc=0;windowt=0;
-			gd->lsize+=bend-bstart;//calculate amount of bps covered out side of blocks
+			gd->lsize+=bend-bstart;//calculate amount of bps covered outside of blocks
 
 		}
 
@@ -427,9 +427,9 @@ SEXP construct_dc(SEXP bamfilenameR, SEXP aRgvals, SEXP filterList) {
 	/* PASS EVERYTHING */
 	write_density(&gd,&user_args,bam_file,&ft);
 	if(!gd.total_reads)goto NO_READS_FOUND;
-	// 1 total_reads  2 gcoverage  3 lcoverage  4 maxscore  5 lmaxscore  6 lowqual  7 filtered  8 collapsed  9 paired  10 proper_pairs 11 pos  12 neg 13 fmapmass
+	// 1 total_reads  2 gcoverage  3 lcoverage  4 maxscore  5 lmaxscore  6 lowqual  7 filtered  8 collapsed  9 paired  10 proper_pairs 11 pos  12 neg 13 fmapmass 14 lsize 15 gsize
 	SET_STRING_ELT(gd.list_names,gd.total_elements*3,mkChar("Statistics"));
-	PROTECT(stats = NEW_NUMERIC(13));upcounter++;
+	PROTECT(stats = NEW_NUMERIC(15));upcounter++;
 	statsp = NUMERIC_POINTER(stats);
 	*statsp++=(double)gd.total_reads;
 	*statsp++=(double)gd.mapmass/(double)gd.gsize;
@@ -444,6 +444,9 @@ SEXP construct_dc(SEXP bamfilenameR, SEXP aRgvals, SEXP filterList) {
 	*statsp++=(double)gd.pos_strand;
 	*statsp++=(double)gd.neg_strand;
 	*statsp=(double)gd.mapmass;
+	*statsp++=(double)gd.lsize;
+	*statsp++=(double)gd.gsize;
+
 
 	if(gd.lmaxScore>=umaxof(usersize)-1){
 		warning("\nThe maximum pile up is exceeding the maximal value of UINT16_MAX=%d. Reads have been capped to that value.\nConsider to rerun using the maxDups option!\n",UINT16_MAX);

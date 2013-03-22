@@ -342,42 +342,35 @@ peak2tss<-function(peaks, gtf, peak_len=500){
 
 #' Convenience function meltPeaks(), which returns a data frame with normalized peak densities suitable for plotting with ggplot2 
 #' @param ... 
-#' @param regions
-#' @param peak_name
+#' @param region
 #' @param control 
 #' @param peak_windows 
 #' @param bin_method
+#' @param rpm
 #' @returnType data.frame
 #' @return 
 #' @author Julius Muller
 #' @export
-meltPeak<-function (..., regions, peak_name, control=FALSE, peak_windows = 0, bin_method="mean", norm_readc=TRUE)
+meltPeak<-function (..., region ,control=FALSE, peak_windows = 0, bin_method="mean", rpm=TRUE)
 {
 	argList<-list(...)
 	
-	if(!peak_name %in% names(regions))stop("Peak name not in regions")
-	if(class(regions)[1]!="GRanges" || !all(c("transcript_id","distance") %in% names(mcols(regions)))){stop("regions must be the annotated output of annotatePeaks or a GRanges object with transcript_id and distance metadata columns")
-	}else{region<-regions[peak_name]}
-	if(!is.logical(control) && length(control)!=length(argList))stop("If control is provided, it must match the amount of experiments.")
-	
-	
-	tcvg<-c();ttl<-c()
-	for (arg in argList) {
-		if (!.is.dc(arg)) stop("Data sets must be of any number of class 'DensityContainer'")
-		tcvg <- c(tcvg, ifelse(norm_readc,fmapmass(arg),1))
-		ttl<-c(ttl,ex_name(arg))
+	if(class(region)[1]!="GRanges" || !all(c("transcript_id","distance") %in% names(mcols(region)))){stop("region must be the annotated output of annotatePeaks or a GRanges object with transcript_id and distance metadata columns")
 	}
+	if(!is.logical(control) && length(control)!=length(argList))stop("If control is provided, it must match the amount of experiments.")
+	if(length(region)!=1)stop("meltPeak cann only process one peak at a time")
+	ttl<-sapply(argList,ex_name)
 	
 	if(is.numeric(peak_windows) && peak_windows>=0){usize<-ifelse(peak_windows==0,width(region),peak_windows)
 	}else(stop("peak_windows must be a positive integer"))
 	
-	nvec <- tcvg/min(tcvg)
 	argc <- 0;mpops<-approx(start(region):end(region),n=usize)$y
-	if(norm_readc){plotdf<-data.frame(NormalizedReads=c(rep(rep(0,usize),length(argList))),Position=c(rep(mpops,length(argList))),Label=c(rep(rep(NA,usize),length(argList))),stringsAsFactors=F)
-	}else{plotdf<-data.frame(Reads=c(rep(rep(0,usize),length(argList))),Position=c(rep(mpops,length(argList))),Label=c(rep(rep(NA,usize),length(argList))),stringsAsFactors=F)}
+	if(rpm){plotdf<-data.frame(RPM=c(rep(rep(0,usize),length(argList))),Position=c(rep(mpops,length(argList))),Label=unlist(lapply(ttl,rep,usize)),stringsAsFactors=F)
+	}else{plotdf<-data.frame(Reads=c(rep(rep(0,usize),length(argList))),Position=c(rep(mpops,length(argList))),Label=unlist(lapply(ttl,rep,usize)),stringsAsFactors=F)}
 	rlab<-colnames(plotdf)[1]
 	
 	for (arg in argList) {
+		if (!.is.dc(arg)) stop("Data sets must be of any number of class 'DensityContainer'")
 		argc <- argc + 1
 		if (!is.logical(control)){
 			if(!.is.dc(control[[argc]]))stop("Input must be of class 'DensityContainer'")
@@ -390,7 +383,7 @@ meltPeak<-function (..., regions, peak_name, control=FALSE, peak_windows = 0, bi
 				dsts<-approx(dsts,n=peak_windows)$y
 			}else{dsts<-slice1(arg, chrom=as.character(seqnames(region)), start=start(region), end=end(region), control=ctrl, treads_norm=T, nbins=peak_windows, bin_method=bin_method)}
 		}else{dsts <- slice1(arg, chrom=as.character(seqnames(region)), start=start(region), end=end(region), control = ctrl, treads_norm = T)}      
-		plotdf[(1+(argc-1)*usize):(argc*usize),rlab] <- dsts/nvec[argc]
+		plotdf[(1+(argc-1)*usize):(argc*usize),rlab] <- if(rpm) dsts/(filtered_reads(arg)/10^6) else dsts
 		plotdf[(1+(argc-1)*usize):(argc*usize),"Label"] <- ex_name(arg)
 	}
 	return(plotdf)

@@ -18,6 +18,7 @@ setTV<-function(dc,filename,seqs,stats,pileup_hist,call_args,spliced,ex_name,dat
 			dc@total_reads@collapsed<-stats[8]
 			dc@total_reads@paired_reads<-stats[9]
 			dc@total_reads@proper_pairs<-stats[10]
+			dc@total_reads@gsize<-stats[15]
 			dc@paired<-ifelse(dc@total_reads@proper_pairs,TRUE,FALSE)
 			
 			dc@filtered_reads@lcoverage<-stats[3]
@@ -29,6 +30,7 @@ setTV<-function(dc,filename,seqs,stats,pileup_hist,call_args,spliced,ex_name,dat
 			dc@filtered_reads@chromosomes<-seqs[!sapply(seqs,function(x) x=="")]
 			dc@filtered_reads@chromosomes<-dc@filtered_reads@chromosomes[-grep("_*ind|Statistics|Histogram",dc@filtered_reads@chromosomes)]
 			dc@filtered_reads@fmapmass<-stats[13] 
+			dc@filtered_reads@lsize<-stats[14] 
 			
 			dc@histogram<-pileup_hist[2:length(pileup_hist)]
 			names(dc@histogram)<-1:(length(pileup_hist)-1)

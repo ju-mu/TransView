@@ -10,18 +10,15 @@ Returns a data frame with labels and normalized densities of the provided \linkS
 
 }
 \usage{
-meltPeak(..., regions, peak_name, control=FALSE, peak_windows = 0, bin_method="mean", norm_readc=TRUE)
+meltPeak(..., region, control=FALSE, peak_windows = 0, bin_method="mean", rpm=TRUE)
 }
 
 \arguments{
   \item{...}{
 \linkS4class{DensityContainer} objects
 }
-  \item{regions}{
-Can be the annotated output of annotatePeaks or a \linkS4class{GRanges} object with a transcript_id and distance metadata column.
-}
-  \item{peak_name}{
-Name of the peak region to be plotted. Must be present in the row names of \code{regions}.
+  \item{region}{
+Can be one entry of the annotated output of annotatePeaks or a \linkS4class{GRanges} object with one entry and with a transcript_id and distance metadata column.
 }
   \item{control}{
 An optional vector of \linkS4class{DensityContainer} objects, that have to match the order of experiments passed as a first argument. E.g. \code{plotTV(ex1.ChIP,ex2.ChIP,control=c(ex1.Input,ex2.Input)}. The content will be treated as background densities and subtracted from the matching experiment.
@@ -32,8 +29,8 @@ If set to an integer greater than 0, all binding profiles will be interpolated i
   \item{bin_method}{
 Specifies the function used to summarize the bins specified by nbins. Possible methods are \sQuote{max}, \sQuote{mean}, \sQuote{median} or \sQuote{approx} for linear interpolation. 
 }
-  \item{norm_readc}{
-If set to \code{TRUE}, all sample groups will be normalized based on the map mass which is defined here as all mapped reads after quality filtering multiplied by their individual read length.
+  \item{rpm}{
+If set to \code{TRUE}, all sample groups will be normalized to Reads Per Million mapped reads after quality filtering according to the filtered_reads slot of the \linkS4class{DensityContainer}. Should not be set in truncated density maps!
 }
 }
 \details{
@@ -60,7 +57,7 @@ GTF<-gtf2gr(exgtf)
 peaks<-macs2gr(fn.macs,psize=500)
 peaks.anno<-annotatePeaks(peaks=peaks,gtf=GTF)
 
-peak1.df<-meltPeak(exden.chip,regions=peaks.anno,peak_name="Peak.1",bin_method="mean",peak_windows=100,norm_readc=TRUE)
+peak1.df<-meltPeak(exden.chip,region=peaks.anno["Peak.1"],bin_method="mean",peak_windows=100,rpm=TRUE)
 head(peak1.df)
 
 }

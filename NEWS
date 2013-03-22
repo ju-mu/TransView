@@ -1,4 +1,13 @@
 
+CHANGES IN VERSION 1.2.8
+------------------------
+
+NEW FEATURES
+
+    o meltPeaks() normalizes to Reads Per Million mapped reads after quality filtering according to the filtered_reads slot.
+    o parseReads() now also returns the total and local base pairs covered which can be accessed by the slots gsize() and lsize() respectively.  
+
+
 CHANGES IN VERSION 1.2.7
 ------------------------
 
@@ -16,7 +25,7 @@ CHANGES IN VERSION 1.2.6
 
 BUG FIXES
 
-    o macs2gr() supports relative distances instead of absolute distances from older MACS version.
+    o macs2gr() supports relative distances instead of absolute distances reported by older MACS versions.
     
 
 CHANGES IN VERSION 1.2.5

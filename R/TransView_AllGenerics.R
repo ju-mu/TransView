@@ -27,6 +27,8 @@ setGeneric("fmapmass", function(dc) standardGeneric("fmapmass"))
 setGeneric("data_pointer", function(dc) standardGeneric("data_pointer"))
 setGeneric("env", function(dc) standardGeneric("env"))
 setGeneric("size", function(dc) standardGeneric("size"))
+setGeneric("lsize", function(dc) standardGeneric("lsize"))
+setGeneric("gsize", function(dc) standardGeneric("gsize"))
 
 setGeneric("parameters", function(tvr) standardGeneric("parameters"))
 setGeneric("clusters", function(tvr) standardGeneric("clusters"))

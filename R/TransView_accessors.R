@@ -31,6 +31,8 @@ setMethod("data_pointer", signature("DensityContainer"), function(dc) dc@data_po
 setMethod("env", signature("DensityContainer"), function(dc) dc@env)
 setMethod("size", signature("DensityContainer"), function(dc) dc@size)
 setMethod("histogram", signature("DensityContainer"), function(dc) dc@histogram)
+setMethod("lsize", signature("DensityContainer"), function(dc) dc@lsize)
+setMethod("gsize", signature("DensityContainer"), function(dc) dc@gsize)
 
 setMethod("parameters", signature("TVResults"), function(tvr) tvr@parameters)
 setMethod("clusters", signature("TVResults"), function(tvr) tvr@ptv_order$Cluster)

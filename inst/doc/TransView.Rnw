@@ -447,14 +447,15 @@ individual experiments. Furthermore the densities are wrapped into a data.frame
 that can be directly passed to \Rpackage{ggplot2}:
 
 <<tplots_1_e,eval=FALSE>>=
-peak1.df<-meltPeak(dens.ind,dens.wt,regions=peaks.tss,peak_name="Peak.1",peak_windows=100,norm_readc=F)
+peak1.df<-meltPeak(dens.ind,dens.wt,region=peaks.tss["Peak.1"],peak_windows=100,rpm=F)
 ggplot(peak1.df,aes(x=Position,y=Reads,color=Label))+geom_line(size=2)
 @
 
-Note that  \Rfunarg{norm\_readc} is set to FALSE, since the filtered map mass in the toy example contains only a small subset of the original map mass. Normalizing to map mass would result in artificailly upscaled densities in the control experiment: 
+Note that \Rfunarg{rpm} is set to FALSE, since the filtered map mass in the toy
+example contains only a small subset of the original map mass. Normalizing to map mass would result in artificailly upscaled densities in the control experiment:
 
 <<tplots_1_e,eval=FALSE>>=
-peak1.df<-meltPeak(dens.ind,dens.wt,regions=peaks.tss,peak_name="Peak.1",peak_windows=100,norm_readc=T)
+peak1.df<-meltPeak(dens.ind,dens.wt,region=peaks.tss["Peak.1"],peak_windows=100,rpm=T)
 ggplot(peak1.df,aes(x=Position,y=NormalizedReads,color=Label))+geom_line(size=2)#Wrong!
 @
 

@@ -8,6 +8,8 @@
 #' @slot lcoverage Local coverage which is computed by filtered map mass/covered region
 #' @slot lmaxScore Maximum score of the density maps
 #' @slot fmapmass total map mass after filtering
+#' @slot lsize Equals the toal amount of base pairs covered excluding empty regions
+
 #' @author Julius Muller
 #' @export
 setClass("FilteredReads",
@@ -19,7 +21,8 @@ setClass("FilteredReads",
 				neg="numeric",
 				lcoverage="numeric",
 				lmaxScore="numeric",
-				fmapmass="numeric"
+				fmapmass="numeric",
+				lsize="numeric"
 		)
 )
 
@@ -31,17 +34,20 @@ setClass("FilteredReads",
 #' @slot paired_reads Amount of reads having multiple segments in sequencing
 #' @slot proper_pairs Amount of pairs with each segment properly aligned according to the aligner
 #' @slot collapsed If maxDups is in place, the reads at the same position and strand exceeding this value will be counted here.
+#' @slot gsize Equals to the sum of the length of all ranges from 0 to the last read per chromosome.
 #' @author Julius Muller
 #' @export
 setClass("TotalReads",
 		representation(
 				nreads="numeric",
+				gsize="numeric",
 				gcoverage="numeric",
 				maxScore="numeric",
 				lowqual="numeric",
 				paired_reads="numeric",
 				proper_pairs="numeric",
 				collapsed="numeric"
+
 		)
 )
 

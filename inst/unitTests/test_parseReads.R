@@ -83,7 +83,7 @@ test_melt_peak_plotTVData<- function(){
   tvdata<-plotTVData(cluster_res)
   checkEqualsNumeric(c(17,17,18,18,19,19),round(tvdata$Average_scores[200:205]))
   apeaks<-annotatePeaks(peaks=peaks,gtf=GTF.mm9)
-  peak5.df<-meltPeak(exden.chip,exden.chip,regions=apeaks,peak_name="Peak.5",bin_method="mean",peak_windows=800,norm_readc=F)
+  peak5.df<-meltPeak(exden.chip,exden.chip,region=apeaks["Peak.5"],bin_method="mean",peak_windows=800,rpm=F)
   checkEqualsNumeric(peak5.df[which(peak5.df$Label=="Test2" & peak5.df$Position>53914536 & peak5.df$Position<53914538),]$Reads,c(29,29,28,29,29,28))
 }
 
