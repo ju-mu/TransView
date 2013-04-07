@@ -99,7 +99,7 @@ macs2gr<-function(macs_peaks_xls,psize=500,amount="all",min_pileup=0,log10qval=0
 	version<-0
 	if(all(head_required_v2_09p %in% colnames(peaks))){
 		version<-2.09;cat("Version 2.09+ detected\n")
-		if(log10qval>0)peaks<-peaks[which(peaks[,"log10_qval"]>log10pval),]
+		if(log10qval>0)peaks<-peaks[which(peaks[,"log10_qval"]>log10qval),]
 	}else if(all(head_required_v1_41p %in% colnames(peaks))){
 		version<-1.41;cat("Version 1.4x detected\n")
 		if(all(log10qval!=0,length(grep("qvalue",colnames(peaks)))==0))stop("No qvalue present in this MACS file. Please set log10qval to 0")

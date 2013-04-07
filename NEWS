@@ -1,12 +1,19 @@
 
 
+CHANGES IN VERSION 1.5.1
+------------------------
+
+BUG FIXES
+
+    o The q-value cut off in macs2gr did not work as expected.
+
+
 CHANGES IN VERSION 1.2.11
 ------------------------
 
 BUG FIXES
 
-    o Fix compilation problem with new Rsamtools version on windows.
-
+    o Fixed a compilation problem with new Rsamtools version on windows.
 
 
 CHANGES IN VERSION 1.2.9
