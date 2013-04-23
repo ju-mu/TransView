@@ -283,8 +283,8 @@ gtf2gr<-function(gtf_file,chromosomes=NA,refseq_nm=F, gtf_feature=c("exon"),tran
 	GTF<-GTF[which(GTF$strand %in% c("+","-")),]
 	transpos<-grep(transcript_id,strsplit(GTF[1,1],";")[[1]])
 	gpos<-grep(gene_id,strsplit(GTF[1,1],";")[[1]])
-	if(length(gpos)>0)GTF$gene_id<-gsub(paste("^ +",gene_id," ",sep=""),"",sapply(strsplit(GTF[,1],";"),"[",gpos))
-	GTF[,1]<-gsub(paste("^ +",transcript_id," ",sep=""),"",sapply(strsplit(GTF[,1],";"),"[",transpos))
+	if(length(gpos)>0)GTF$gene_id<-gsub(paste("^ *",gene_id," ",sep=""),"",sapply(strsplit(GTF[,1],";"),"[",gpos))
+	GTF[,1]<-gsub(paste("^ *",transcript_id," ",sep=""),"",sapply(strsplit(GTF[,1],";"),"[",transpos))
 	if(refseq_nm)GTF<-GTF[which(substring(GTF[,1],1,2)=="NM"),]
 	
 	GTF_se<-GTF[which(GTF$strand == "+"),]
