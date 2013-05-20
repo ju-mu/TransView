@@ -10,7 +10,7 @@ Returns a data frame with labels and normalized densities of the provided \linkS
 
 }
 \usage{
-meltPeak(..., region, control=FALSE, peak_windows = 0, bin_method="mean", rpm=TRUE)
+meltPeak(..., region, control=FALSE, peak_windows = 0, bin_method="mean", rpm=TRUE, smooth=0)
 }
 
 \arguments{
@@ -32,13 +32,16 @@ Specifies the function used to summarize the bins specified by nbins. Possible m
   \item{rpm}{
 If set to \code{TRUE}, all sample groups will be normalized to Reads Per Million mapped reads after quality filtering according to the filtered_reads slot of the \linkS4class{DensityContainer}. Should not be set in truncated density maps!
 }
+  \item{smooth}{
+If greater than 0, smooth defines the smoother span as described in the function \code{lowess}. This function will be applied to reads or RPM values, depending on \code{rpm} and the results will be stored in the column \sQuote{Smooth}.
+}
 }
 \details{
 Convenience function which returns a data frame with one row per BP or, if \code{peak_window} greater than zero, per \code{peak_window}. The label will be taken from the \code{ex_name} slot of the \linkS4class{DensityContainer}. The slot should be set to meaningful names before using this function. All read densities will be normalized to the total map mass and if a control is provided also background subtracted.
 }
 
 \value{
-\code{data.frame} with 3 columns: \sQuote{NormalizedReads}, \sQuote{Label} and \sQuote{Position}.
+\code{data.frame} with 3 columns: \sQuote{NormalizedReads}, \sQuote{Label} and \sQuote{Position}. Optionally a column \sQuote{Smooth} will be appended.
 }
 \author{Julius Muller \email{ju-mu@alumni.ethz.ch}}
 \examples{

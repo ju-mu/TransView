@@ -351,7 +351,7 @@ peak2tss<-function(peaks, gtf, peak_len=500){
 #' @return 
 #' @author Julius Muller
 #' @export
-meltPeak<-function (..., region ,control=FALSE, peak_windows = 0, bin_method="mean", rpm=TRUE)
+meltPeak<-function (..., region ,control=FALSE, peak_windows = 0, bin_method="mean", rpm=TRUE, smooth=0)
 {
 	argList<-list(...)
 	
@@ -368,7 +368,7 @@ meltPeak<-function (..., region ,control=FALSE, peak_windows = 0, bin_method="me
 	if(rpm){plotdf<-data.frame(RPM=c(rep(rep(0,usize),length(argList))),Position=c(rep(mpops,length(argList))),Label=unlist(lapply(ttl,rep,usize)),stringsAsFactors=F)
 	}else{plotdf<-data.frame(Reads=c(rep(rep(0,usize),length(argList))),Position=c(rep(mpops,length(argList))),Label=unlist(lapply(ttl,rep,usize)),stringsAsFactors=F)}
 	rlab<-colnames(plotdf)[1]
-	
+	if(smooth)plotdf$Smooth<-0
 	for (arg in argList) {
 		if (!.is.dc(arg)) stop("Data sets must be of any number of class 'DensityContainer'")
 		argc <- argc + 1
@@ -385,6 +385,11 @@ meltPeak<-function (..., region ,control=FALSE, peak_windows = 0, bin_method="me
 		}else{dsts <- slice1(arg, chrom=as.character(seqnames(region)), start=start(region), end=end(region), control = ctrl, treads_norm = T)}      
 		plotdf[(1+(argc-1)*usize):(argc*usize),rlab] <- if(rpm) dsts/(filtered_reads(arg)/10^6) else dsts
 		plotdf[(1+(argc-1)*usize):(argc*usize),"Label"] <- ex_name(arg)
+		if(smooth>0){
+			mloe <- lowess(plotdf[(1+(argc-1)*usize):(argc*usize),"Position"],plotdf[(1+(argc-1)*usize):(argc*usize),rlab], f =smooth)
+			plotdf[(1+(argc-1)*usize):(argc*usize),"Smooth"] <- mloe$y
+			plotdf[(1+(argc-1)*usize):(argc*usize),"Position"] <- mloe$x
+		}
 	}
 	return(plotdf)
 }

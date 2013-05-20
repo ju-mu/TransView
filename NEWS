@@ -1,4 +1,12 @@
 
+CHANGES IN VERSION 1.5.3
+------------------------
+
+NEW FEATURES
+
+    o meltPeak can return loess smoothed scores.
+    
+
 CHANGES IN VERSION 1.5.2
 ------------------------
 
@@ -20,7 +28,7 @@ CHANGES IN VERSION 1.2.11
 
 BUG FIXES
 
-    o Fixed a compilation problem with new Rsamtools version on windows.
+    o Fixed a compilation problem related to the new Rsamtools version on windows.
 
 
 CHANGES IN VERSION 1.2.9
