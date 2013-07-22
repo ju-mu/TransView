@@ -77,7 +77,7 @@ test_melt_peak_plotTVData<- function(){
   ex_name(exden.ctrl)<-"Test1"
   ex_name(exden.chip)<-"Test2"
   cluster_res<-plotTV(exden.chip,exden.ctrl,regions=peaks,norm_readc=FALSE,showPlot=FALSE,verbose=0,cluster="hc_pe")
-  checkEquals(as.character(na.omit(unlist(parameters(cluster_res)))),c("Test2","Test1","global","hc_pe", "FALSE", "501","TRUE", "1", "0.5","white","blue" ,"red", "redgreen","0.05", "0.05","auto", "auto" , "100", "peaks","FALSE" , "FALSE" ,"TRUE","2", "1", "0","0", "0", "0","2","FALSE" )  )
+  checkEquals(as.character(na.omit(unlist(parameters(cluster_res)))),c("Test2","Test1","global","hc_pe", "FALSE", "501","TRUE", "1", "0.5","white","blue" ,"red", "redgreen","0.05", "0.05","auto", "auto" , "100", "peaks","FALSE" , "FALSE" ,"TRUE","2", "1", "0","0","FALSE", "0", "0","2","FALSE" )  )
   xdf<-summaryTV(cluster_res)
   checkEqualsNumeric(c(15,20,5,18,1,8,3,12),xdf$Original[3:10])
   tvdata<-plotTVData(cluster_res)

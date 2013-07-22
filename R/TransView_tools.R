@@ -347,6 +347,7 @@ peak2tss<-function(peaks, gtf, peak_len=500){
 #' @param peak_windows 
 #' @param bin_method
 #' @param rpm
+#' @param smooth
 #' @returnType data.frame
 #' @return 
 #' @author Julius Muller

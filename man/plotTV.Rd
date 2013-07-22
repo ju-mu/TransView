@@ -12,7 +12,7 @@ plotTV( ..., regions, gtf=NA, scale="global", cluster="none", control = F, peak_
 		bin_method="mean", show_names=T, label_size=1, zero_alpha=0.5, colr=c("white","blue", "red"), 
 		colr_df="redgreen",	colour_spread=c(0.05,0.05), key_limit="auto", key_limit_rna="auto", 
 		set_zero="center", rowv=NA,	gclust="peaks", norm_readc=T, no_key=F, stranded_peak=T, 
-		ck_size=c(2,1), remove_lowex=0, verbose=1, showPlot=T, name_width=2)
+		ck_size=c(2,1), remove_lowex=0, verbose=1, showPlot=T, name_width=2, pre_mRNA=F)
 }
 
 \arguments{
@@ -83,7 +83,7 @@ If set to \code{TRUE}, all sample groups will be normalized based on the map mas
 If \code{TRUE}, no color keys will be displayed.  
 }
   \item{stranded_peak}{
-If \code{TRUE} and strand informations are provided in \code{peaks}, peak profiles will flipped if located on the negative strand.
+If \code{TRUE} and strand informations are provided in \code{regions}, peak profiles will flipped if located on the negative strand.
 }  
   \item{ck_size}{
   Determines the size of the colour key in the form \code{c(height,width)}
@@ -100,7 +100,9 @@ If \code{FALSE}, plotting will be suppressed and only the \linkS4class{TVResults
   \item{name_width}{
 Determines the width of the space for the peak and gene names.
 }  
-
+  \item{pre_mRNA}{
+All expression data will be plotted from the start of the first exon to the end of the last exon including all introns.
+}  
 }
 \details{
 

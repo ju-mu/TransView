@@ -32,7 +32,7 @@
 	
 	if(length(nbins)==1 && is.numeric(nbins) && nbins>0){
 		if(!(bin_method %in% c("mean","median","max")))stop("bin_method must be either 'mean','median' or 'max'");
-		if(length(unique(ranges[,3]-ranges[,2]))>1)stop("All ranges must have equal length if nbins is greater than 0")
+		#if(length(unique(ranges[,3]-ranges[,2]))>1)stop("All ranges must have equal length if nbins is greater than 0")
 	} else if(nbins!=0) {
 		stop("nbins must be a positive integer");
 	}	

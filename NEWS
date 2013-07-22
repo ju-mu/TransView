@@ -1,4 +1,16 @@
 
+CHANGES IN VERSION 1.5.4
+------------------------
+
+NEW FEATURES
+
+    o plotTV can now plot expression profiles including introns triggered by the new option pre_mRNA
+
+BUG FIXES
+
+    o Fixed a bug which occurred if only two colors were passed to plotTV via colr 
+
+
 CHANGES IN VERSION 1.5.3
 ------------------------
 

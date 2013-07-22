@@ -33,7 +33,7 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 			bin_method="mean", show_names=T, label_size=1, zero_alpha=0.5, colr=c("white","blue", "red"), 
 			colr_df="redgreen",	colour_spread=c(0.05,0.05), key_limit="auto", key_limit_rna="auto", 
 			set_zero="center", rowv=NA,	gclust="peaks", norm_readc=T, no_key=F, stranded_peak=T, 
-			ck_size=c(2,1), remove_lowex=0, verbose=1, showPlot=T, name_width=2)
+			ck_size=c(2,1), remove_lowex=0, verbose=1, showPlot=T, name_width=2, pre_mRNA=F)
 {
 	
 	argList<-list(...)
@@ -68,7 +68,7 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 	ptv_order<-data.frame("Original"=1:nrow(regions),"Peak"=rownames(regions),"Transcript"=regions$transcript_id,"Cluster"=rep(1,nrow(regions)),"NewPosition"=1:nrow(regions),stringsAsFactors=F)
 	
 	if(tpeaks<2)stop("At least 2 rows have to be present in regions")
-	
+	if(length(ex_windows)!=1 || ex_windows<1)stop("ex_windows needs to be greater than 0")
 	if((cluster!="none" & cluster<2) | length(cluster)>1)stop("cluster must be a numeric > 1") 
 	if(is.numeric(rowv) || class(rowv)[[1]]=="TVResults"){
 		if(cluster!="none"){stop("rowv cannot be used if cluster is set")
@@ -128,13 +128,29 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 			}else{ctrl=F}
 			if(spliced(arg)){
 				argcRNA <- argcRNA+1
-				
-				if(ex_windows>0){
+
+				if(pre_mRNA){
+					transc<-gtf[which(values(gtf)$transcript_id %in% regions$transcript_id)]
+					transc<-as.data.frame(transc,stringsAsFactors=F)[,c("seqnames","start","end","strand","transcript_id","exon_id")]
+					mtrans<-do.call(rbind,lapply(as.character(unique(transc$transcript_id)),function(x){z<-transc[which(transc$transcript_id==x),];maxc<-z[paste0(x,".",max(z$exon_id)),]$end;minc<-z[paste0(x,".",1),]$start ;c(as.character(z[1,]$seqnames),min(minc,maxc),max(minc,maxc),as.character(z[1,]$strand))}))
+					rownames(mtrans)<-as.character(unique(transc$transcript_id))
+					tregions<-data.frame(chr=mtrans[,1],start=as.numeric(mtrans[,2]),end=as.numeric(mtrans[,3]),strand=mtrans[,4])
+					tregions<-tregions[regions$transcript_id,]
+					if(bin_method=="approx"){
+						dsts <- sliceN(arg, tregions, control = ctrl,treads_norm = norm_readc)
+						dsts<-.gene2window(dsts,ex_windows,window_fun="approx")
+					}else{dsts <- sliceN(arg, tregions, control = ctrl,treads_norm = norm_readc,nbins=ex_windows,bin_method=bin_method)}
+					if("strand" %in% colnames(regions)){#flip negative strand at the tss
+						oord<-which(regions$strand == "-")
+						dsts[oord]<-lapply(dsts[oord],rev)
+					}
+				}else{
 					if(bin_method=="approx"){
 						dsts <- sliceNT(arg, gtf=gtf, tnames=regions$transcript_id, control = ctrl,treads_norm = norm_readc,concatenate=T,stranded=T)
 						dsts<-.gene2window(dsts,ex_windows,window_fun="approx")
 					}else{dsts <- sliceNT(arg, gtf=gtf, tnames=regions$transcript_id, control = ctrl,treads_norm = norm_readc,concatenate=T,stranded=T,nbins=ex_windows,bin_method=bin_method)}
 				}
+
 				dsts<- do.call(rbind, dsts)/rvec[argcRNA]#matrix for fast plotting normalized by total reads
 				plotmatRNA[[argcRNA]] <- dsts
 				
@@ -349,7 +365,8 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 		}else if(key_limits[[argn]][1]>rmax && rmax>=1 && scale!="global")key_limits[[argn]][1]<-rmax-1
 		
 		plotmat[[argn]]<-shrink(plotmat[[argn]],key_limits[[argn]])
-		col[[argn]] <- colorpanel(key_limits[[argn]][2]-key_limits[[argn]][1], colr[1],colr[2],colr[3])
+		if(length(colr)<3){col[[argn]] <- colorpanel(key_limits[[argn]][2]-key_limits[[argn]][1], low=colr[1],high=colr[2])
+		}else{col[[argn]] <- colorpanel(key_limits[[argn]][2]-key_limits[[argn]][1],colr[1],colr[2],colr[3])}
 		if(!no_key & showPlot){
 			scalevec[[argn]]<-shrink(scalevec[[argn]],key_limits[[argn]])
 			breaks <- seq(key_limits[[argn]][1], key_limits[[argn]][2], length = length(col[[argn]])+1)
@@ -526,7 +543,7 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 	params<-list("colnames_peaks"=ttl,"colnames_expression"=ttlRNA,scale=scale, cluster=cluster, control = control, peak_windows = peak_windows, show_names=show_names, label_size=label_size, 
 			zero_alpha=zero_alpha, colr=colr, colr_df=colr_df,colour_spread=colour_spread, key_limit=key_limit, 
 			key_limit_rna=key_limit_rna, rowv=rowv,ex_windows=ex_windows, gclust=gclust, norm_readc=norm_readc, no_key=no_key, 
-			stranded_peak=stranded_peak, ck_size=ck_size, remove_lowex=remove_lowex, verbose=verbose,"Matrices"=hmapc,"Expression_data"=argcRNA,"Peak_data"=argc,showPlot=showPlot)
+			stranded_peak=stranded_peak, ck_size=ck_size, remove_lowex=remove_lowex, verbose=verbose, pre_mRNA=pre_mRNA ,"Matrices"=hmapc,"Expression_data"=argcRNA,"Peak_data"=argc,showPlot=showPlot)
 	
 	ptv_order$NewPosition<-order(ptv_order$NewPosition)
 	if(!is.list(plotmatRNA))plotmatRNA<-list(plotmatRNA)
