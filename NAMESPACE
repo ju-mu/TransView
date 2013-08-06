@@ -6,7 +6,7 @@ importFrom("IRanges",IRanges,RleList)
 importFrom("GenomicRanges",GRanges)
 importFrom("gplots",colorpanel,greenred)
 importMethodsFrom("IRanges",reduce,start,end,values,"ranges<-")
-importMethodsFrom("GenomicRanges",as.data.frame,"elementMetadata<-",seqnames,names)
+importMethodsFrom("GenomicRanges",as.data.frame,"elementMetadata<-",seqnames,names,findOverlaps,nearest)
 import(methods)
 import(Rsamtools)
 

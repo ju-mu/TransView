@@ -10,7 +10,7 @@ A convenience function to associate a genomic position to a TSS provided by a gt
 }
 
 \usage{
-annotatePeaks(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T, unifyBy=F, unify_fun="mean", min_genelength=300)
+annotatePeaks(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T, unifyBy=F, unify_fun="mean", min_genelength=0)
 }
 
 \arguments{
@@ -33,7 +33,7 @@ If a transcript has multiple isoforms, the peak will be associated arbitrarily t
 A function which will choose the isoform in case of non unique peak - TSS associations. Defaults to the isoform with the highest mean score \code{function(x){mean(x)}}.
 }
   \item{min_genelength}{
-Genes with a total sum of all exons smaller than this value will be excluded from the output.
+Genes with a total sum of all exons smaller than this value will not be associated to a peak.
 }
 }
 

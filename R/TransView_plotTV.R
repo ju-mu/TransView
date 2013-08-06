@@ -374,7 +374,7 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 			
 			hc <- hist(scalevec[[argn]], plot = F, breaks = breaks)$counts
 			ktitle<-sprintf("Reads %s > %d","",key_limits[[argn]][1])
-			kpeak<-2*max(hc[2:(length(hc)-1)])
+			kpeak<-if(length(hc)>1)2*max(hc[2:(length(hc)-1)]) else hc[1]
 			if(hc[1]>kpeak){#correct for very skewed distributions
 				ktitle<-sprintf("Reads %s > %d","",key_limits[[argn]][1]+1)
 				hc[1]<-0
