@@ -148,6 +148,7 @@ macs2gr<-function(macs_peaks_xls,psize=500,amount="all",min_pileup=0,log10qval=0
 #' @return 
 #' @author Julius Muller
 #' @export
+
 annotatePeaks<-function(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T, unifyBy=F, unify_fun="mean", min_genelength=0){
 	
 	if(class(peaks)[1]!="GRanges")stop("peaks must be of class 'GRanges'")
@@ -162,14 +163,16 @@ annotatePeaks<-function(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T, uni
 	
 	first_ex<-gtf[gtf$exon_id==1,]
 	end(first_ex[strand(first_ex) == "+"])<-start(first_ex[strand(first_ex) == "+"])
+	start(first_ex[strand(first_ex) == "-"])<-end(first_ex[strand(first_ex) == "-"])
+	first_ex$tss<-start(first_ex)
+	
 	start(first_ex[strand(first_ex) == "+"])<-start(first_ex[strand(first_ex) == "+"])+limit[1]
 	end(first_ex[strand(first_ex) == "+"])<-end(first_ex[strand(first_ex) == "+"])+limit[2]
 	
-	start(first_ex[strand(first_ex) == "-"])<-end(first_ex[strand(first_ex) == "-"])
 	start(first_ex[strand(first_ex) == "-"])<-start(first_ex[strand(first_ex) == "-"])-limit[2]
 	end(first_ex[strand(first_ex) == "-"])<-end(first_ex[strand(first_ex) == "-"])-limit[1]
 	
-	closest_ref_all<-findOverlaps(peaks,first_ex,type="within",select="all")
+	closest_ref_all<-findOverlaps(peaks,first_ex,type="any",select="all")
 	closest_ids<-first_ex[subjectHits(closest_ref_all)]$transcript_id
 	gtf<-gtf[gtf$transcript_id %in% closest_ids]
 	
@@ -177,21 +180,25 @@ annotatePeaks<-function(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T, uni
 	if("gene_id" %in% names(values(gtf)))peaks$gene_id<-NA
 	
 	first_ex<-first_ex[subjectHits(closest_ref_all)]
-	peakind<-queryHits(closest_ref_all)
+	peakind<-unique(queryHits(closest_ref_all))
+	
+	start(first_ex)<-first_ex$tss
+	end(first_ex)<-first_ex$tss
 	
 	closest_ref<-suppressWarnings(nearest(peaks[peakind], first_ex, select = "arbitrary"))
-	peakmids<-start(peaks[peakind])+(0.5*width(peaks[peakind]))
 	
 	if("gene_id" %in% names(values(gtf)))peaks[peakind]$gene_id<-first_ex[closest_ref]$gene_id
-	strand(peaks[peakind])<-as.character(strand(first_ex[closest_ref]))
 	peaks[peakind]$transcript_id<-first_ex[closest_ref]$transcript_id
-	peaks[peakind]$distance<-start(first_ex[closest_ref])
-	peaks[peakind]$distance[as.character(strand(peaks[peakind]))=="+"]<-peakmids[ as.character(strand(peaks[peakind]))=="+"]-peaks[peakind]$distance[as.character(strand(peaks[peakind]))=="+"]+limit[1]
-	peaks[peakind]$distance[as.character(strand(peaks[peakind]))=="-"]<-peaks[peakind]$distance[as.character(strand(peaks[peakind]))=="-"]-peakmids[ as.character(strand(peaks[peakind]))=="-"]+limit[2]
+	peaks[peakind]$distance<-NA
+	
+	mstrands<-as.character(strand(first_ex[closest_ref]))
+	peakmids<-start(peaks[peakind])+(0.5*width(peaks[peakind]))
+	
+	peaks[peakind]$distance[mstrands=="+"]<-peakmids[ mstrands=="+"]-start(first_ex[closest_ref])[mstrands=="+"]
+	peaks[peakind]$distance[mstrands=="-"]<-start(first_ex[closest_ref])[mstrands=="-"]-peakmids[ mstrands=="-"]
 	
 	resm<-table(!is.na(peaks$distance))
 	message(sprintf("Successful annotation within %gkBps to %gkBps: %d, %d peaks without hit",limit[1]/1000,limit[2]/1000,resm["TRUE"],resm["FALSE"]))
-	
 	
 	if(class(unifyBy)[1]=="DensityContainer"){
 		if(!spliced(unifyBy))stop("unifyBy can only be used with RNA-Seq DensityContainer")
