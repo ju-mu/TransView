@@ -1,4 +1,13 @@
 
+
+CHANGES IN VERSION 1.5.8
+------------------------
+
+BUG FIXES
+
+    o Minor bug fix in annotatePeaks to accommodate recent changes in GRanges
+    
+
 CHANGES IN VERSION 1.5.7
 ------------------------
 

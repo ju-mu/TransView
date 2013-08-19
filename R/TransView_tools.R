@@ -176,8 +176,8 @@ annotatePeaks<-function(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T, uni
 	closest_ids<-first_ex[subjectHits(closest_ref_all)]$transcript_id
 	gtf<-gtf[gtf$transcript_id %in% closest_ids]
 	
-	peaks$transcript_id<-NA;peaks$distance<-NA
-	if("gene_id" %in% names(values(gtf)))peaks$gene_id<-NA
+	peaks$transcript_id<-as.character(NA);peaks$distance<-as.integer(NA)
+	if("gene_id" %in% names(values(gtf)))peaks$gene_id<-as.character(NA)
 	
 	first_ex<-first_ex[subjectHits(closest_ref_all)]
 	peakind<-unique(queryHits(closest_ref_all))
@@ -189,7 +189,6 @@ annotatePeaks<-function(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T, uni
 	
 	if("gene_id" %in% names(values(gtf)))peaks[peakind]$gene_id<-first_ex[closest_ref]$gene_id
 	peaks[peakind]$transcript_id<-first_ex[closest_ref]$transcript_id
-	peaks[peakind]$distance<-NA
 	
 	mstrands<-as.character(strand(first_ex[closest_ref]))
 	peakmids<-start(peaks[peakind])+(0.5*width(peaks[peakind]))
@@ -205,7 +204,7 @@ annotatePeaks<-function(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T, uni
 		
 		first_ex$tss_group<-paste(as.character(seqnames(first_ex)),start(first_ex),sep="|")
 		peak_df<-data.frame(transcript_id=peaks$transcript_id,gene_id=peaks$gene_id,stringsAsFactors=F)
-		peak_df$tss_group=NA
+		peak_df$tss_group<-as.character(NA)
 		peak_df[peakind,]$tss_group<-first_ex[closest_ref]$tss_group
 		
 		amb_list<-split(first_ex,first_ex$tss_group)
