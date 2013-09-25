@@ -15,7 +15,7 @@
 	env1<-env(dc)
 	if(!is.logical(control))env2<-env(control)
 	if(class(ranges)[1] == "GRanges"){
-		ranges<-as.data.frame(ranges,stringsAsFactors=F)
+		ranges<-as.data.frame(ranges)
 		ranges$seqnames<-as.character(ranges$seqnames)
 		ranges$strand<-as.character(ranges$strand)
 	}

@@ -31,7 +31,7 @@
 	if(class(gtf)[1] == "GRanges"){
 		if(!("transcript_id" %in% colnames(values(gtf))))stop("Column 'transcript_id' missing in gtf metadata")
 		transc<-gtf[which(values(gtf)$transcript_id %in% tnames)]
-		transc<-as.data.frame(transc,stringsAsFactors=F)[,c("seqnames","start","end","strand","transcript_id")]
+		transc<-as.data.frame(transc)[,c("seqnames","start","end","strand","transcript_id")]
 		transc$seqnames<-as.character(transc$seqnames)
 		transc$transcript_id<-as.character(transc$transcript_id)
 		transc$strand<-as.character(transc$strand)
@@ -157,7 +157,7 @@ setMethod("sliceNT", signature(dc="DensityContainer",tnames="character"), .slice
 	if(class(gtf)[1] == "GRanges"){
 		if(!("transcript_id" %in% colnames(values(gtf))))stop("Column 'transcript_id' missing in gtf metadata")
 		transc<-gtf[which(values(gtf)$transcript_id == tname)]
-		transc<-as.data.frame(transc,stringsAsFactors=F)[,c("seqnames","start","end","strand")]
+		transc<-as.data.frame(transc)[,c("seqnames","start","end","strand")]
 	}else if(class(gtf)[1] == "data.frame"){
 		if(!("transcript_id" %in% colnames(gtf)))stop("Column 'transcript_id' missing in gtf")
 		transc<-gtf[which(gtf[,'transcript_id']  == tname),1:4]

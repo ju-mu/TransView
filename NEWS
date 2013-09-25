@@ -1,4 +1,12 @@
 
+CHANGES IN VERSION 1.5.9
+------------------------
+
+BUG FIXES
+
+    o Use of mcols in favor of values to access meta data in GRanges objects
+    
+
 
 CHANGES IN VERSION 1.5.8
 ------------------------

@@ -89,7 +89,7 @@ GTF.dm3<-gtf2gr(exgtf)
 
 slice1T(exden.exprs,tname="NM_001014688",gtf=GTF.dm3,concatenate=FALSE)
 
-my_genes<-sliceNT(exden.exprs,unique(values(GTF.dm3)$transcript_id[101:150]),gtf=GTF.dm3)
+my_genes<-sliceNT(exden.exprs,unique(mcols(GTF.dm3)$transcript_id[101:150]),gtf=GTF.dm3)
 lapply(my_genes,function(x)sum(x)/length(x))
 
 

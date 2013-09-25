@@ -254,7 +254,7 @@ By default, an integer vector with the read densities will be returned. If the p
 
 <<spliced_3, echo=TRUE,keep.source=TRUE>>=
 #Just for demonstration all refseq ids are taken, not recommended for a full sized GTF!
-all_ids<-unique(values(gtf.dm3)$transcript_id)
+all_ids<-unique(mcols(gtf.dm3)$transcript_id)
 
 slices.exprs<-sliceNT(dens.pas_paired,all_ids,gtf.dm3,stranded=T,concatenate=F)
 
@@ -333,7 +333,7 @@ transcripts into \Rfunarg{ex\_windows} amount of points using the
 method specified by \Rfunarg{bin\_method}. Furthermore all density
 profiles on the reverse strand will be reversed, so that all transcripts have their 5 and 3 prime site on the left and the right side of the image respectively Fig\ref{fig:3a}. In addition to transcript profile plots, ordinary heat maps of a matrix can be plotted as well Fig\ref{fig:3b}. Since the functionality of heat map plotting in \TransView is rather limited compared to specialized packages such as \Rpackage{heatmap.2}, plotting heat maps is not intended to be used for stand alone plots but rather in conjunction with peak profile plots.
 <<label=pTV3, fig=TRUE, echo=FALSE,width=4, height=5,include=FALSE,prefix.string=plotTV,resolution=150,pdf=F,png=T>>=
-genes2plot<-unique(values(gtf.dm3)$transcript_id)
+genes2plot<-unique(mcols(gtf.dm3)$transcript_id)
 cluster_results<-plotTV(dens.pas_paired,dens.pas_upaired,regions=genes2plot,cluster=5,gtf=gtf.dm3,show_names=T,verbose=0,ex_windows=300)
 @
 
@@ -365,7 +365,7 @@ Both expression based plots are converted to z-scores with rows of mean zero and
 Fig\ref{fig:3a} and Fig\ref{fig:3b} have been generated with the following commands:
 
 <<label=pTV3_c,echo=TRUE,eval=FALSE>>=
-genes2plot<-unique(values(gtf.dm3)$transcript_id)
+genes2plot<-unique(mcols(gtf.dm3)$transcript_id)
 cluster_results<-plotTV(dens.pas_paired,dens.pas_upaired,regions=genes2plot,gtf=gtf.dm3,show_names=T,cluster=5,verbose=0,ex_windows=300)
 @
 

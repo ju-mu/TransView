@@ -90,9 +90,10 @@ typedef struct read_metrics{
 static inline void write_density_ungapped(usersize *cptr,int32_t l_seq,uint32_t *maxscore){
 	int k=1;//set k to 1 to achieve half opened intervals -> 110 - 100 will be 10 Bps!
 	for(;k<=l_seq;++k){//go through every bp and write
-		if(*cptr==UINT16_MAX)--*cptr;
-		++*cptr;
-		*maxscore=max(*cptr,*maxscore);
+		if(*cptr<UINT16_MAX){
+			++*cptr;
+			*maxscore=max(*cptr,*maxscore);
+		}
 		++cptr;
 	}
 }
@@ -116,9 +117,10 @@ static inline void write_density_gapped(usersize *cptr,uint32_t *cigar,uint16_t 
 			case BAM_CMATCH://0
 			case 7://7
 				for(k=1;k<=oplen;++k){//set k to 1 to achieve half opened intervals -> 110 - 100 will be 10 Bps!
-					if(*cptr==UINT16_MAX)--*cptr;
-					++*cptr;
-					*maxscore=max(*cptr,*maxscore);
+					if(*cptr<UINT16_MAX){
+						++*cptr;
+						*maxscore=max(*cptr,*maxscore);
+					}
 					++cptr;
 				}
 				break;

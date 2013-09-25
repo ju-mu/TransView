@@ -128,7 +128,7 @@ macs2gr<-function(macs_peaks_xls,psize=500,amount="all",min_pileup=0,log10qval=0
 	}
 	
 	gr<-GRanges(ranges=IRanges(start=pstarts,end=pends),strand="*",seqnames=peaks$chr)+((psize-1)/2)
-	elementMetadata(gr)<-cbind(pileup=peaks$pileup,enrichment=peaks$enrichment,log10_pval=peaks$log10_pval)
+	mcols(gr)<-cbind(pileup=peaks$pileup,enrichment=peaks$enrichment,log10_pval=peaks$log10_pval)
 	names(gr)<-paste("Peak",1:nrow(peaks),sep=".")
 	
 	if(amount!="all" & amount<length(gr))gr<-gr[1:amount]

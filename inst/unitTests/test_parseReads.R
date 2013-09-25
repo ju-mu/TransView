@@ -55,20 +55,20 @@ fn.pas_paired<-untreated1_chr4()
 
 test_parse_T <- function(){
 	exden.exprs<-parseReads(fn.pas_paired,spliced=T,min_quality=30,read_stranded=1,max_dups=5,verbose=0)
-	x1<-slice1T(exden.exprs,values(GTF.dm3)$transcript_id[50],gtf=GTF.dm3,concatenate=T,stranded=T)[2735:2745]
+	x1<-slice1T(exden.exprs,mcols(GTF.dm3)$transcript_id[50],gtf=GTF.dm3,concatenate=T,stranded=T)[2735:2745]
 	checkEqualsNumeric(c(34,35,35,36,36,36,38,38,38,38,37),x1)
 	#GTF.dm3[which(names(GTF.dm3) == "NM_001014696.2")]
-	x2<-sliceNT(exden.exprs,unique(values(GTF.dm3)$transcript_id[101:150]),gtf=GTF.dm3,concatenate=F,stranded=F)$"NM_001014696.2"  [31:40]
+	x2<-sliceNT(exden.exprs,unique(mcols(GTF.dm3)$transcript_id[101:150]),gtf=GTF.dm3,concatenate=F,stranded=F)$"NM_001014696.2"  [31:40]
 	checkEqualsNumeric(c( 8,  8, 11, 12, 12, 13, 13, 13, 12, 13),x2)
 	
-	x3<-sliceNT(exden.exprs,unique(values(GTF.dm3)$transcript_id[101:150]),gtf=GTF.dm3,concatenate=F,stranded=T)$"NM_001014696.2"  [31:40]
+	x3<-sliceNT(exden.exprs,unique(mcols(GTF.dm3)$transcript_id[101:150]),gtf=GTF.dm3,concatenate=F,stranded=T)$"NM_001014696.2"  [31:40]
 	checkEqualsNumeric(c( 26, 26, 26, 25, 25, 25, 23, 23, 23, 23),x3)
 	
 }
 
 test_annotate<- function(){
 	apeaks<-annotatePeaks(peaks=peaks,gtf=GTF.mm9)
-	checkIdentical(values(apeaks)$transcript_id[5],"NM_011031")
+	checkIdentical(mcols(apeaks)$transcript_id[5],"NM_011031")
 }
 
 test_melt_peak_plotTVData<- function(){

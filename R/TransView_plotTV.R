@@ -46,7 +46,7 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 	if(class(regions)[1]!="GRanges"){
 		if(class(regions)[1]=="character"){
 			trefs<-length(unique(regions))
-			regions<-as.data.frame(gtf[which(values(gtf)$transcript_id %in% regions),])
+			regions<-as.data.frame(gtf[which(mcols(gtf)$transcript_id %in% regions),])
 			tpeaks<-length(unique(regions$transcript_id))
 			if(tpeaks!=trefs){
 				if(tpeaks==0){stop("No identifier in column 'transcript_id' of the gtf is matching the regions!")
@@ -130,7 +130,7 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 				argcRNA <- argcRNA+1
 
 				if(pre_mRNA){
-					transc<-gtf[which(values(gtf)$transcript_id %in% regions$transcript_id)]
+					transc<-gtf[which(mcols(gtf)$transcript_id %in% regions$transcript_id)]
 					transc<-as.data.frame(transc,stringsAsFactors=F)[,c("seqnames","start","end","strand","transcript_id","exon_id")]
 					mtrans<-do.call(rbind,lapply(as.character(unique(transc$transcript_id)),function(x){z<-transc[which(transc$transcript_id==x),];maxc<-z[paste0(x,".",max(z$exon_id)),]$end;minc<-z[paste0(x,".",1),]$start ;c(as.character(z[1,]$seqnames),min(minc,maxc),max(minc,maxc),as.character(z[1,]$strand))}))
 					rownames(mtrans)<-as.character(unique(transc$transcript_id))
