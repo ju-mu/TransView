@@ -1,11 +1,18 @@
 
+CHANGES IN VERSION 1.7.1
+------------------------
+
+BUG FIXES
+
+    o Minor correction to avoid warning messages issued after GRanges to data.frame conversion
+
+
 CHANGES IN VERSION 1.5.9
 ------------------------
 
 BUG FIXES
 
     o Use of mcols in favor of values to access meta data in GRanges objects
-    
 
 
 CHANGES IN VERSION 1.5.8

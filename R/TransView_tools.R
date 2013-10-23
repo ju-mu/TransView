@@ -296,7 +296,7 @@ peak2tss<-function(peaks, gtf, peak_len=500){
 	mingtf<-gtf[which(values(gtf)$transcript_id %in% ids),]
 	names(mingtf)<-paste(values(mingtf)$transcript_id,values(mingtf)$exon_id,sep=".")
 	mids<-paste(ids,"1",sep=".")
-	mingtf<-as.data.frame(mingtf[which(values(mingtf)$exon_id ==1 ),],stringsAsFactors=F)
+	mingtf<-as.data.frame(mingtf[which(values(mingtf)$exon_id ==1 ),])
 	tss<-mingtf[which(mingtf$strand == "+"),c("seqnames","start","strand"),drop=F]
 	names(tss)<-c("chr","TSS","strand")
 	ntss<-mingtf[which(mingtf$strand == "-"),c("seqnames","end","strand"),drop=F]

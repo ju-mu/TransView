@@ -58,7 +58,7 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 			colnames(regions)<-c("seqnames","start","end","width","strand","transcript_id")
 		}else if(class(regions)[1]!="logical" || !is.na(regions))stop("regions must be of class 'GRanges' or 'character'")
 	}else{
-		regions<-as.data.frame(regions,stringsAsFactors=F)
+		regions<-as.data.frame(regions)
 		regions$seqnames<-as.character(regions$seqnames)
 		regions$strand<-as.character(regions$strand)
 		tpeaks<-nrow(regions)
@@ -131,7 +131,7 @@ plotTV<-function ( ..., regions, gtf=NA, scale="global", cluster="none", control
 
 				if(pre_mRNA){
 					transc<-gtf[which(mcols(gtf)$transcript_id %in% regions$transcript_id)]
-					transc<-as.data.frame(transc,stringsAsFactors=F)[,c("seqnames","start","end","strand","transcript_id","exon_id")]
+					transc<-as.data.frame(transc)[,c("seqnames","start","end","strand","transcript_id","exon_id")]
 					mtrans<-do.call(rbind,lapply(as.character(unique(transc$transcript_id)),function(x){z<-transc[which(transc$transcript_id==x),];maxc<-z[paste0(x,".",max(z$exon_id)),]$end;minc<-z[paste0(x,".",1),]$start ;c(as.character(z[1,]$seqnames),min(minc,maxc),max(minc,maxc),as.character(z[1,]$strand))}))
 					rownames(mtrans)<-as.character(unique(transc$transcript_id))
 					tregions<-data.frame(chr=mtrans[,1],start=as.numeric(mtrans[,2]),end=as.numeric(mtrans[,3]),strand=mtrans[,4])

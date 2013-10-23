@@ -42,7 +42,7 @@ parseReads<-function( filename, spliced=F, read_stranded=0, paired_only=F, readt
 	}
 	
 	if(class(set_filter)[1] %in% c("GRanges","data.frame")){
-		if(class(set_filter)[1] == "GRanges")set_filter<-as.data.frame(set_filter,stringsAsFactors=F)
+		if(class(set_filter)[1] == "GRanges")set_filter<-as.data.frame(set_filter)
 		set_filter<-.prepare_flist(set_filter)
 		if(length(set_filter[[1]])<2 && !is.numeric(set_filter))stop("The filter contains not enough columns. Structure: Chromosome-Start-End-[Strand]")
 		if(length(unique(names(set_filter)))>1000)stop("The filter contains too many sequences / unique chromosome IDs (>1000).")
