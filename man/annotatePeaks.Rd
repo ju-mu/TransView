@@ -6,11 +6,11 @@ Associates peaks to TSS
 }
 
 \description{
-A convenience function to associate a genomic position to a TSS provided by a gtf file. 
+A convenience function to associate the peak center to a TSS or gene body provided by a gtf file. 
 }
 
 \usage{
-annotatePeaks(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T, unifyBy=F, unify_fun="mean", min_genelength=0)
+annotatePeaks(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T, unifyBy=F, unify_fun="mean", min_genelength=0, reference="tss")
 }
 
 \arguments{
@@ -34,6 +34,9 @@ A function which will choose the isoform in case of non unique peak - TSS associ
 }
   \item{min_genelength}{
 Genes with a total sum of all exons smaller than this value will not be associated to a peak.
+}
+  \item{reference}{
+If set to \sQuote{tss}, the transcript with the smallest distance from the TSS to the peak center will be returned. If set to \sQuote{gene_body} the transcript with the smallest distance from the gene body (TSS or TES) to the peak center will be returned and the distance will be zero if the peak center is located within the gene body.  
 }
 }
 

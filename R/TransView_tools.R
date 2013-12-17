@@ -148,9 +148,9 @@ macs2gr<-function(macs_peaks_xls,psize=500,amount="all",min_pileup=0,log10qval=0
 #' @return 
 #' @author Julius Muller
 #' @export
-
-annotatePeaks<-function(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T, unifyBy=F, unify_fun="mean", min_genelength=0){
+annotatePeaks<-function(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T, unifyBy=F, unify_fun="mean", min_genelength=0,reference="tss"){
 	
+	if(!reference%in%c("gene_body","tss"))stop("reference must be one of: gene_body or tss")
 	if(class(peaks)[1]!="GRanges")stop("peaks must be of class 'GRanges'")
 	if(class(gtf)[1]!="GRanges")stop("gtf must be of class 'GRanges'")
 	if(!all(c("exon_id","transcript_id") %in% names(values(gtf))))stop("gtf must have columns 'exon_id' and 'transcript_id'")
@@ -161,40 +161,81 @@ annotatePeaks<-function(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T, uni
 		gtf<-gtf[!gtf$transcript_id %in% names(tlens[which(tlens==F)])]
 	}
 	
-	first_ex<-gtf[gtf$exon_id==1,]
-	end(first_ex[strand(first_ex) == "+"])<-start(first_ex[strand(first_ex) == "+"])
-	start(first_ex[strand(first_ex) == "-"])<-end(first_ex[strand(first_ex) == "-"])
-	first_ex$tss<-start(first_ex)
+	if(reference=="gene_body"){
+		gn2tr<-mcols(gtf[gtf$exon_id==1,])[,c("transcript_id","gene_id")]
+		gn2tr2<-gn2tr$gene_id;names(gn2tr2)<-gn2tr$transcript_id
+		strans<-split(gtf,gtf$transcript_id,drop=F)
+		transr<-unlist(reduce(strans,min.gapwidth=99999999))
+		transr$gene_id<-gn2tr2[names(transr)]
+		stopifnot(!any(duplicated(names(transr))))
+		transr$tss<-NA;transr$tes<-NA;
+		transr$tss[as.character(strand(transr)) == "+"]<-start(transr[strand(transr) == "+"])
+		transr$tss[as.character(strand(transr)) == "-"]<-end(transr[strand(transr) == "-"])
+		transr$tes[as.character(strand(transr)) == "+"]<-end(transr[strand(transr) == "+"])
+		transr$tes[as.character(strand(transr)) == "-"]<-start(transr[strand(transr) == "-"])    
+	}else if(reference=="tss"){
+		transr<-gtf[gtf$exon_id==1,]
+		end(transr[strand(transr) == "+"])<-start(transr[strand(transr) == "+"])
+		start(transr[strand(transr) == "-"])<-end(transr[strand(transr) == "-"])
+		transr$tss<-start(transr)  
+		names(transr)<-transr$transcript_id
+	}
 	
-	start(first_ex[strand(first_ex) == "+"])<-start(first_ex[strand(first_ex) == "+"])+limit[1]
-	end(first_ex[strand(first_ex) == "+"])<-end(first_ex[strand(first_ex) == "+"])+limit[2]
+	start(transr[strand(transr) == "+"])<-start(transr[strand(transr) == "+"])+limit[1]
+	end(transr[strand(transr) == "+"])<-end(transr[strand(transr) == "+"])+limit[2]
 	
-	start(first_ex[strand(first_ex) == "-"])<-start(first_ex[strand(first_ex) == "-"])-limit[2]
-	end(first_ex[strand(first_ex) == "-"])<-end(first_ex[strand(first_ex) == "-"])-limit[1]
+	start(transr[strand(transr) == "-"])<-start(transr[strand(transr) == "-"])-limit[2]
+	end(transr[strand(transr) == "-"])<-end(transr[strand(transr) == "-"])-limit[1]
 	
-	closest_ref_all<-findOverlaps(peaks,first_ex,type="any",select="all")
-	closest_ids<-first_ex[subjectHits(closest_ref_all)]$transcript_id
+	closest_ref_all<-findOverlaps(peaks,transr,type="any",select="all")
+	closest_ids<-names(transr[subjectHits(closest_ref_all)])
 	gtf<-gtf[gtf$transcript_id %in% closest_ids]
 	
 	peaks$transcript_id<-as.character(NA);peaks$distance<-as.integer(NA)
 	if("gene_id" %in% names(values(gtf)))peaks$gene_id<-as.character(NA)
 	
-	first_ex<-first_ex[subjectHits(closest_ref_all)]
+	transr<-transr[subjectHits(closest_ref_all)]
 	peakind<-unique(queryHits(closest_ref_all))
 	
-	start(first_ex)<-first_ex$tss
-	end(first_ex)<-first_ex$tss
+	if(reference=="gene_body"){
+		start(transr)[as.character(strand(transr)) == "+"]<-transr[strand(transr) == "+"]$tss
+		end(transr)[as.character(strand(transr)) == "+"]<-transr[strand(transr) == "+"]$tes
+		
+		start(transr)[as.character(strand(transr)) == "-"]<-transr[strand(transr) == "-"]$tes
+		end(transr)[as.character(strand(transr)) == "-"]<-transr[strand(transr) == "-"]$tss
+	}else if(reference=="tss"){
+		start(transr)<-transr$tss
+		end(transr)<-transr$tss
+	}
 	
-	closest_ref<-suppressWarnings(nearest(peaks[peakind], first_ex, select = "arbitrary"))
+	peaksm<-peaks[peakind]
+	peakmids<-mid(ranges(peaksm))
+	start(peaksm)<-peakmids
+	end(peaksm)<-peakmids
 	
-	if("gene_id" %in% names(values(gtf)))peaks[peakind]$gene_id<-first_ex[closest_ref]$gene_id
-	peaks[peakind]$transcript_id<-first_ex[closest_ref]$transcript_id
+	closest_ref<-suppressWarnings(nearest(peaksm, transr, select = "arbitrary"))
 	
-	mstrands<-as.character(strand(first_ex[closest_ref]))
-	peakmids<-start(peaks[peakind])+(0.5*width(peaks[peakind]))
+	if("gene_id" %in% names(values(gtf)))peaks[peakind]$gene_id<-transr[closest_ref]$gene_id
+	peaks[peakind]$transcript_id<-names(transr[closest_ref])
 	
-	peaks[peakind]$distance[mstrands=="+"]<-peakmids[ mstrands=="+"]-start(first_ex[closest_ref])[mstrands=="+"]
-	peaks[peakind]$distance[mstrands=="-"]<-start(first_ex[closest_ref])[mstrands=="-"]-peakmids[ mstrands=="-"]
+	mstrands<-as.character(strand(transr[closest_ref]))
+	
+	if(reference=="gene_body"){
+		peaks$distance_tss<-as.integer(NA);peaks$distance_tes<-as.integer(NA);
+		pdist.tss<-peakmids[mstrands=="+"]-start(transr[closest_ref])[mstrands=="+"]
+		pdist.tes<-end(transr[closest_ref])[mstrands=="+"]-peakmids[ mstrands=="+"]
+		peaks[peakind]$distance[mstrands=="+"]<-sapply(1:length(pdist.tss),function(dii){mdis<-c(pdist.tss[dii],pdist.tes[dii]);mdis[mdis>0]<-0;ifelse(min(mdis)<0,min(mdis),0)})
+		peaks[peakind]$distance_tss[mstrands=="+"]<-pdist.tss;peaks[peakind]$distance_tes[mstrands=="+"]<-pdist.tes;
+		
+		ndist.tss<-end(transr[closest_ref])[mstrands=="-"]-peakmids[ mstrands=="-"]
+		ndist.tes<-peakmids[ mstrands=="-"]-start(transr[closest_ref])[mstrands=="-"]
+		peaks[peakind]$distance[mstrands=="-"]<-sapply(1:length(ndist.tss),function(dii){mdis<-c(ndist.tss[dii],ndist.tes[dii]);mdis[mdis>0]<-0;ifelse(min(mdis)<0,min(mdis),0)})
+		peaks[peakind]$distance_tss[mstrands=="-"]<-ndist.tss;peaks[peakind]$distance_tes[mstrands=="-"]<-ndist.tes;
+		
+	}else if(reference=="tss"){
+		peaks[peakind]$distance[mstrands=="+"]<-peakmids[ mstrands=="+"]-start(transr[closest_ref])[mstrands=="+"]
+		peaks[peakind]$distance[mstrands=="-"]<-start(transr[closest_ref])[mstrands=="-"]-peakmids[ mstrands=="-"]
+	}
 	
 	resm<-table(!is.na(peaks$distance))
 	message(sprintf("Successful annotation within %gkBps to %gkBps: %d, %d peaks without hit",limit[1]/1000,limit[2]/1000,resm["TRUE"],resm["FALSE"]))
@@ -202,23 +243,23 @@ annotatePeaks<-function(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T, uni
 	if(class(unifyBy)[1]=="DensityContainer"){
 		if(!spliced(unifyBy))stop("unifyBy can only be used with RNA-Seq DensityContainer")
 		
-		first_ex$tss_group<-paste(as.character(seqnames(first_ex)),start(first_ex),sep="|")
+		transr$tss_group<-paste(as.character(seqnames(transr)),start(transr),sep="|")
 		peak_df<-data.frame(transcript_id=peaks$transcript_id,gene_id=peaks$gene_id,stringsAsFactors=F)
 		peak_df$tss_group<-as.character(NA)
-		peak_df[peakind,]$tss_group<-first_ex[closest_ref]$tss_group
+		peak_df[peakind,]$tss_group<-transr[closest_ref]$tss_group
 		
-		amb_list<-split(first_ex,first_ex$tss_group)
+		amb_list<-split(transr,transr$tss_group)
 		amb_list<-amb_list[elementLengths(amb_list)>1]
-		first_ex<-first_ex[which(first_ex$tss_group %in% names(amb_list) & first_ex$tss_group %in% peak_df$tss_group)]
+		transr<-transr[which(transr$tss_group %in% names(amb_list) & transr$tss_group %in% peak_df$tss_group)]
 		
-		sob<-sliceNT(unifyBy,first_ex$transcript_id,gtf,concatenate=T,stranded=T)  
-		if(is.character(unify_fun) && unify_fun=="mean"){first_ex$score<-sapply(sob,function(x){mean(x)})
-		}else if(is.character(unify_fun) && unify_fun=="median"){first_ex$score<-sapply(sob,function(x){median(x)})
-		}else{first_ex$score<-sapply(sob,function(x){unify_fun(x)})}
+		sob<-sliceNT(unifyBy,transr$transcript_id,gtf,concatenate=T,stranded=T)  
+		if(is.character(unify_fun) && unify_fun=="mean"){transr$score<-sapply(sob,function(x){mean(x)})
+		}else if(is.character(unify_fun) && unify_fun=="median"){transr$score<-sapply(sob,function(x){median(x)})
+		}else{transr$score<-sapply(sob,function(x){unify_fun(x)})}
 		
-		xdf<-as.data.frame(first_ex,row.names=1:length(first_ex))[,c("tss_group","transcript_id","score")]
+		xdf<-as.data.frame(transr,row.names=1:length(transr))[,c("tss_group","transcript_id","score")]
 		xdf$transcript_id<-as.character(xdf$transcript_id)
-		invisible(lapply(unique(first_ex$tss_group),function(gid){ndf<-xdf[xdf$tss_group==gid,];ndf<-ndf[which.max(ndf$score),,drop=T];peak_df[which(peak_df$tss_group == gid),]$transcript_id<<-ndf$transcript_id}))
+		invisible(lapply(unique(transr$tss_group),function(gid){ndf<-xdf[xdf$tss_group==gid,];ndf<-ndf[which.max(ndf$score),,drop=T];peak_df[which(peak_df$tss_group == gid),]$transcript_id<<-ndf$transcript_id}))
 		xrec<-table(peak_df$transcript_id==peaks$transcript_id)
 		message(sprintf("%d transcript_id values changed based on unifyBy",xrec["FALSE"]))
 		peaks$transcript_id<-peak_df$transcript_id

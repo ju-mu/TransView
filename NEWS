@@ -1,4 +1,13 @@
 
+CHANGES IN VERSION 1.7.2
+------------------------
+
+NEW FEATURES
+
+    o annotatePeaks now assigns a gene to the peak center instead of the peak limits 
+    o annotatePeaks takes the new argument 'reference' to enable alternative peak to gene body associations
+    
+
 CHANGES IN VERSION 1.7.1
 ------------------------
 
