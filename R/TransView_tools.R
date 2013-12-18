@@ -187,7 +187,7 @@ annotatePeaks<-function(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T, uni
 	start(transr[strand(transr) == "-"])<-start(transr[strand(transr) == "-"])-limit[2]
 	end(transr[strand(transr) == "-"])<-end(transr[strand(transr) == "-"])-limit[1]
 	
-	closest_ref_all<-findOverlaps(peaks,transr,type="any",select="all")
+	closest_ref_all<-suppressWarnings(findOverlaps(peaks,transr,type="any",select="all"))
 	closest_ids<-names(transr[subjectHits(closest_ref_all)])
 	gtf<-gtf[gtf$transcript_id %in% closest_ids]
 	
@@ -222,19 +222,21 @@ annotatePeaks<-function(peaks, gtf, limit=c(-10e3,10e3), remove_unmatched=T, uni
 	
 	if(reference=="gene_body"){
 		peaks$distance_tss<-as.integer(NA);peaks$distance_tes<-as.integer(NA);
-		pdist.tss<-peakmids[mstrands=="+"]-start(transr[closest_ref])[mstrands=="+"]
-		pdist.tes<-end(transr[closest_ref])[mstrands=="+"]-peakmids[ mstrands=="+"]
-		peaks[peakind]$distance[mstrands=="+"]<-sapply(1:length(pdist.tss),function(dii){mdis<-c(pdist.tss[dii],pdist.tes[dii]);mdis[mdis>0]<-0;ifelse(min(mdis)<0,min(mdis),0)})
-		peaks[peakind]$distance_tss[mstrands=="+"]<-pdist.tss;peaks[peakind]$distance_tes[mstrands=="+"]<-pdist.tes;
-		
-		ndist.tss<-end(transr[closest_ref])[mstrands=="-"]-peakmids[ mstrands=="-"]
-		ndist.tes<-peakmids[ mstrands=="-"]-start(transr[closest_ref])[mstrands=="-"]
-		peaks[peakind]$distance[mstrands=="-"]<-sapply(1:length(ndist.tss),function(dii){mdis<-c(ndist.tss[dii],ndist.tes[dii]);mdis[mdis>0]<-0;ifelse(min(mdis)<0,min(mdis),0)})
-		peaks[peakind]$distance_tss[mstrands=="-"]<-ndist.tss;peaks[peakind]$distance_tes[mstrands=="-"]<-ndist.tes;
-		
+		if("+" %in% mstrands){
+			pdist.tss<-peakmids[mstrands=="+"]-start(transr[closest_ref])[mstrands=="+"]
+			pdist.tes<-end(transr[closest_ref])[mstrands=="+"]-peakmids[ mstrands=="+"]
+			peaks[peakind]$distance[mstrands=="+"]<-sapply(1:length(pdist.tss),function(dii){mdis<-c(pdist.tss[dii],pdist.tes[dii]);mdis[mdis>0]<-0;ifelse(min(mdis)<0,min(mdis),0)})
+			peaks[peakind]$distance_tss[mstrands=="+"]<-pdist.tss;peaks[peakind]$distance_tes[mstrands=="+"]<-pdist.tes;
+		}
+		if("-" %in% mstrands){
+			ndist.tss<-end(transr[closest_ref])[mstrands=="-"]-peakmids[ mstrands=="-"]
+			ndist.tes<-peakmids[ mstrands=="-"]-start(transr[closest_ref])[mstrands=="-"]
+			peaks[peakind]$distance[mstrands=="-"]<-sapply(1:length(ndist.tss),function(dii){mdis<-c(ndist.tss[dii],ndist.tes[dii]);mdis[mdis>0]<-0;ifelse(min(mdis)<0,min(mdis),0)})
+			peaks[peakind]$distance_tss[mstrands=="-"]<-ndist.tss;peaks[peakind]$distance_tes[mstrands=="-"]<-ndist.tes;
+		}
 	}else if(reference=="tss"){
-		peaks[peakind]$distance[mstrands=="+"]<-peakmids[ mstrands=="+"]-start(transr[closest_ref])[mstrands=="+"]
-		peaks[peakind]$distance[mstrands=="-"]<-start(transr[closest_ref])[mstrands=="-"]-peakmids[ mstrands=="-"]
+		if("+" %in% mstrands)peaks[peakind]$distance[mstrands=="+"]<-peakmids[ mstrands=="+"]-start(transr[closest_ref])[mstrands=="+"]
+		if("-" %in% mstrands)peaks[peakind]$distance[mstrands=="-"]<-start(transr[closest_ref])[mstrands=="-"]-peakmids[ mstrands=="-"]
 	}
 	
 	resm<-table(!is.na(peaks$distance))

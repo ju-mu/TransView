@@ -69,6 +69,12 @@ test_parse_T <- function(){
 test_annotate<- function(){
 	apeaks<-annotatePeaks(peaks=peaks,gtf=GTF.mm9)
 	checkIdentical(mcols(apeaks)$transcript_id[5],"NM_011031")
+	
+	peaks2<-shift(peaks,10000)
+	apeaks2<-annotatePeaks(peaks=peaks2,limit=c(-5000,2000),gtf=GTF.mm9,reference="tss",remove_unmatched=F)
+	apeaks2.gb<-annotatePeaks(peaks=peaks2,limit=c(-5000,2000),gtf=GTF.mm9,reference="gene_body",remove_unmatched=F)
+	checkEqualsNumeric(apeaks2.gb[which(apeaks2.gb$transcript_id=="NM_013686")]$distance,-1364)
+	checkTrue(all(is.na(apeaks2$transcript_id)))
 }
 
 test_melt_peak_plotTVData<- function(){

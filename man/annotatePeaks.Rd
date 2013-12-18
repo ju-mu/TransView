@@ -56,6 +56,7 @@ exls<-dir(system.file("extdata", package="TransView"),full=TRUE,patt="xls$")
 GTF<-gtf2gr(exgtf)
 peaks<-macs2gr(exls,psize=500)
 apeaks<-annotatePeaks(peaks=peaks,gtf=GTF)
+apeaks.gb<-annotatePeaks(peaks=peaks,gtf=GTF,reference="gene_body")
 
 }
 
