@@ -1,4 +1,12 @@
 
+CHANGES IN VERSION 1.7.4
+------------------------
+
+BUG FIXES
+
+    o Removed import error introduced with version 1.7.2
+    
+
 CHANGES IN VERSION 1.7.3
 ------------------------
 

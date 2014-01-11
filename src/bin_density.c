@@ -29,7 +29,7 @@
 */
 int vect_max(int * cpos,int wwidth,int * orivec){
 	int mpos;
-	int msum=0,result=orivec[*cpos];
+	int result=orivec[*cpos];
 	for(mpos=*cpos;*cpos<mpos+wwidth;(*cpos)++){
 		result=max(result,orivec[*cpos]);
 	}
@@ -99,7 +99,7 @@ int mean(int * cpos,int wwidth,int * orivec){
 * @todo Nothing
 */
 void shrink(int * orivec, int * newvec, int orivecl, int window_count, int (*summarizep)(int *,int,int *)){
-	int msum,mpos,cpos=0,wwidth=ceil((double)orivecl/(double)window_count),nvc=0;
+	int cpos=0,wwidth=ceil((double)orivecl/(double)window_count),nvc=0;
 	for(;window_count>0;window_count--){
 		if(orivecl<wwidth)wwidth=orivecl;
 		orivecl-=wwidth;
@@ -150,7 +150,7 @@ void expand(int * orivec, int * newvec, int orivecl, int window_count){
 */
 double vect_max_dble(int * cpos,int wwidth,double * orivec){
 	int mpos;
-	double msum=0,result=orivec[*cpos];
+	double result=orivec[*cpos];
 	for(mpos=*cpos;*cpos<mpos+wwidth;(*cpos)++){
 		result=max(result,orivec[*cpos]);
 	}
@@ -221,7 +221,7 @@ double mean_dble(int * cpos,int wwidth,double * orivec){
 * @todo Nothing
 */
 void shrink_dble(double * orivec, double * newvec, int orivecl, int window_count, double (*summarizep)(int *,int,double *)){
-	int msum,mpos,cpos=0,wwidth=ceil((double)orivecl/(double)window_count),nvc=0;
+	int cpos=0,wwidth=ceil((double)orivecl/(double)window_count),nvc=0;
 	for(;window_count>0;window_count--){
 		if(orivecl<wwidth)wwidth=orivecl;
 		orivecl-=wwidth;

@@ -232,8 +232,8 @@ void write_density(global_densities_t * gd,user_arguments_t * user_args,samfile_
 		printf("%d LOW QUALITY READS SKIPPED\n",bresults.lowqual);
 		#endif
 
-
-		cs.min_scorespace=(++cs.min_scorespace)/(4/sizeof(usersize));//Only half the space needed with uint16_t
+		cs.min_scorespace++;
+		cs.min_scorespace=cs.min_scorespace/(4/sizeof(usersize));//Only half the space needed with uint16_t
 		PROTECT(scores = NEW_INTEGER(cs.min_scorespace++));gd->upcounter++;//initialize compressed scores
 		PROTECT(l_ind = NEW_INTEGER(cs.min_indexspace+1));gd->upcounter++;//initialize genomic index with starting positions of 0 blocks
 		PROTECT(gen_ind = NEW_INTEGER(cs.min_indexspace+1));gd->upcounter++;//initialize linear index with list indexes of block starts

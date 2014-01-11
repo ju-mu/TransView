@@ -5,11 +5,10 @@ import(zlibbioc)
 importFrom("IRanges",IRanges,RleList)
 importFrom("GenomicRanges",GRanges,GRangesList)
 importFrom("gplots",colorpanel,greenred)
-importMethodsFrom("IRanges",reduce,start,end,mcols,"ranges<-")
-importMethodsFrom("GenomicRanges",as.data.frame,"mcols<-",seqnames,names,findOverlaps,nearest,split,unlist)
+importMethodsFrom("IRanges",reduce,unlist,start,end,mcols,"ranges<-")
+importMethodsFrom("GenomicRanges",as.data.frame,"mcols<-",seqnames,names,findOverlaps,nearest,split)
 import(methods)
 import(Rsamtools)
-
 
 exportClasses(DensityContainer)
 export(plotTV,parseReads,rmTV,annotatePeaks,gtf2gr,macs2gr,peak2tss,meltPeak)
