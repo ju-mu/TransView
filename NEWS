@@ -1,11 +1,19 @@
 
+CHANGES IN VERSION 1.15.1
+------------------------
+
+BUG FIXES
+
+    o Importing from S4Vectors instead of IRanges
+
+
 CHANGES IN VERSION 1.7.4
 ------------------------
 
 BUG FIXES
 
     o Removed import error introduced with version 1.7.2
-    
+
 
 CHANGES IN VERSION 1.7.3
 ------------------------
@@ -20,9 +28,9 @@ CHANGES IN VERSION 1.7.2
 
 NEW FEATURES
 
-    o annotatePeaks now assigns a gene to the peak center instead of the peak limits 
+    o annotatePeaks now assigns a gene to the peak center instead of the peak limits
     o annotatePeaks takes the new argument 'reference' to enable alternative peak to gene body associations
-    
+
 
 CHANGES IN VERSION 1.7.1
 ------------------------
@@ -46,7 +54,7 @@ CHANGES IN VERSION 1.5.8
 BUG FIXES
 
     o Minor bug fix in annotatePeaks to accommodate recent changes in GRanges
-    
+
 
 CHANGES IN VERSION 1.5.7
 ------------------------
@@ -54,7 +62,7 @@ CHANGES IN VERSION 1.5.7
 BUG FIXES
 
     o Minor bug fix in annotatePeaks
-    
+
 
 CHANGES IN VERSION 1.5.6
 ------------------------
@@ -62,7 +70,7 @@ CHANGES IN VERSION 1.5.6
 BUG FIXES
 
     o Minor bug fix
-    
+
 
 CHANGES IN VERSION 1.5.5
 ------------------------
@@ -81,7 +89,7 @@ NEW FEATURES
 
 BUG FIXES
 
-    o Fixed a bug which occurred if only two colors were passed to plotTV via colr 
+    o Fixed a bug which occurred if only two colors were passed to plotTV via colr
 
 
 CHANGES IN VERSION 1.5.3
@@ -90,7 +98,7 @@ CHANGES IN VERSION 1.5.3
 NEW FEATURES
 
     o meltPeak can return loess smoothed scores.
-    
+
 
 CHANGES IN VERSION 1.5.2
 ------------------------
@@ -98,7 +106,7 @@ CHANGES IN VERSION 1.5.2
 BUG FIXES
 
     o Fixed an issue with the gene names returned from gtf2gr.
-    
+
 
 CHANGES IN VERSION 1.5.1
 ------------------------
@@ -130,7 +138,7 @@ CHANGES IN VERSION 1.2.8
 NEW FEATURES
 
     o meltPeaks() normalizes to Reads Per Million mapped reads after quality filtering according to the filtered_reads slot.
-    o parseReads() now also returns the total and local base pairs covered which can be accessed by the slots gsize() and lsize() respectively.  
+    o parseReads() now also returns the total and local base pairs covered which can be accessed by the slots gsize() and lsize() respectively.
 
 
 CHANGES IN VERSION 1.2.7
@@ -138,12 +146,12 @@ CHANGES IN VERSION 1.2.7
 
 NEW FEATURES
 
-    o New convenience function meltPeaks(), which returns a data frame with normalized peak densities suitable for plotting with ggplot2. 
-    
+    o New convenience function meltPeaks(), which returns a data frame with normalized peak densities suitable for plotting with ggplot2.
+
 BUG FIXES
 
     o Minor help file corrections.
-    
+
 
 CHANGES IN VERSION 1.2.6
 ------------------------
@@ -151,7 +159,7 @@ CHANGES IN VERSION 1.2.6
 BUG FIXES
 
     o macs2gr() supports relative distances instead of absolute distances reported by older MACS versions.
-    
+
 
 CHANGES IN VERSION 1.2.5
 ------------------------
@@ -185,7 +193,7 @@ CHANGES IN VERSION 1.2.2
 BUG FIXES
 
     o Minor bug fix in plotTV
-    
+
 
 CHANGES IN VERSION 1.2.1
 ------------------------
@@ -229,20 +237,20 @@ NEW FEATURES
 
 BUG FIXES
 
-    o annotatePeaks returned an error when remove_unmatched was disabled. 
+    o annotatePeaks returned an error when remove_unmatched was disabled.
     o Increased filter accuracy of annotatePeaks when min_genelength > 0.
-    
+
 
 CHANGES IN VERSION 1.1.4
 ------------------------
 
 NEW FEATURES
 
-    o All slice methods return NA instead of NULL in case of chromosome miss matches or negative query lengths. 
-	
+    o All slice methods return NA instead of NULL in case of chromosome miss matches or negative query lengths.
+
 BUG FIXES
 
-    o Using toRle in the slice methods will work with missing values. 
+    o Using toRle in the slice methods will work with missing values.
 
 
 CHANGES IN VERSION 1.1.3
@@ -252,21 +260,21 @@ NEW FEATURES
 
     o Setting psize to 'preserve' will enable macs2gr to return the original peak lengths.
     o annotatePeaks can now preserve the gene_id column if present.
-	
+
 BUG FIXES
 
     o Improved type checking.
-    
-    
+
+
 CHANGES IN VERSION 1.1.2
 ------------------------
 
 NEW FEATURES
 
-    o Added an option to gtf2gr which defines the GTF feature type entry to be filtered during parsing  
+    o Added an option to gtf2gr which defines the GTF feature type entry to be filtered during parsing
     o gtf2gr also incorporates the gene_id if present in the input gtf file
-    
- 
+
+
 CHANGES IN VERSION 1.1.1
 ------------------------
 
@@ -274,7 +282,7 @@ BUG FIXES
 
     o Fixed a bug which resulted in wrong quality score cut off in parseReads()
     o annotatePeaks() did not accept input gtf files with present values
-    
+
 
 CHANGES IN VERSION 1.1.0
 ------------------------
@@ -294,17 +302,17 @@ CHANGES IN VERSION 0.99.3
 NEW FEATURES
 
     o Renamed all C files. Registering now takes place in a separate file.
-    
-    o plotTV can now alternatively take a character vector of IDs matching 'transcript_id' in the gtf instead of a GRanges object. This is useful to plot RNA-Seq data matching without regions. 
+
+    o plotTV can now alternatively take a character vector of IDs matching 'transcript_id' in the gtf instead of a GRanges object. This is useful to plot RNA-Seq data matching without regions.
 
 BUG FIXES
-   
+
     o Added PACKAGE argument to .call
-    
+
     o readthrough_pairs argument to parseReads declared experimental.
-	
+
     o Removed the matching RNA-Seq data set and added pasillaBamSubset as an example for RNA-Seq visualisation.
-	
+
 
 CHANGES IN VERSION 0.99.2
 ------------------------
@@ -312,25 +320,25 @@ CHANGES IN VERSION 0.99.2
 NEW FEATURES
 
     o Added getter methods for all slots of DensityContainer and inherited classes for individual access. Added setter methods for spliced and ex_name
-    
+
     o removed dc.size() and added the slot 'size' instead. Also added env and data_pointer slots to class DensityContainer
-    
+
     o improved documentation of S4 methods with usage section
-    
+
     o gtf2df and macs2df renamed to gtf2gr and macs2gr respectively. They are now returning a GRanges object.
 
     o annotatePeaks takes and returns only GRanges objects.
-	
-    o id2tss renamed to peak2tss and now returning an updated GRanges object 
-	
+
+    o id2tss renamed to peak2tss and now returning an updated GRanges object
+
     o plotTV accepts GRanges objects rather than data.frames for gtf and peaks input
 
 BUG FIXES
-   
+
     o Removed all direct slot accessions
 
     o Removed unnecessary call to dyn.load and dyn.unload in parseReads()
-    
+
 
 CHANGES IN VERSION 0.99.1
 ------------------------
@@ -343,6 +351,6 @@ BUG FIXES
 
     o sliceNT did not flip the exons on the negative strand
 
-    o Argument rowv to plotTV did not work with expression threshold remove_lowex 
+    o Argument rowv to plotTV did not work with expression threshold remove_lowex
 
     o Installation on 32bit Windows was not possible
